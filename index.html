@@ -6,6 +6,31 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 </head>
 <body>
+  <style>
+    #enter-vr-btn {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      padding: 16px 40px;
+      font-size: 20px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fff;
+      background: #b8860b;
+      border: 3px solid #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(184, 134, 11, 0.8);
+    }
+    #enter-vr-btn:hover {
+      background: #d4a017;
+      box-shadow: 0 0 30px rgba(212, 160, 23, 1);
+    }
+  </style>
   <a-scene>
 
     <!-- Sky: pitch black -->
@@ -150,5 +175,18 @@
     </a-entity>
 
   </a-scene>
+
+  <button id="enter-vr-btn">Enter VR</button>
+
+  <script>
+    document.getElementById('enter-vr-btn').addEventListener('click', function () {
+      var scene = document.querySelector('a-scene');
+      if (scene.is('vr-mode')) {
+        scene.exitVR();
+      } else {
+        scene.enterVR();
+      }
+    });
+  </script>
 </body>
 </html>
