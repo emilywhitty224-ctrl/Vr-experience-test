@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WWII Blackout Street - The Royal Oak</title>
+  <title>WWII — The Royal Oak, Ezra Street</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 </head>
 <body>
@@ -24,372 +24,386 @@
       border: 3px solid #fff;
       border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(184, 134, 11, 0.8);
+      box-shadow: 0 0 20px rgba(184,134,11,0.8);
     }
     #enter-vr-btn:hover {
       background: #d4a017;
-      box-shadow: 0 0 30px rgba(212, 160, 23, 1);
+      box-shadow: 0 0 30px rgba(212,160,23,1);
     }
   </style>
 
-  <a-scene fog="type: linear; color: #0a0a1a; near: 12; far: 28">
+  <!--
+    SCENE: Duckett's Passage / Ezra Street — WWII Blackout Night
+    Street width: 3.5m (x: -1.75 to +1.75)
+    User spawns at (0, 1.6, 1) looking up at the Royal Oak sign
+    Pub (The Royal Oak) is a corner building on the left, with a 45-degree
+    beveled entrance. Opposing alley wall is 6m tall on the right.
+    Fog near:1 far:8 means the alley vanishes into total darkness beyond 8m.
+  -->
 
-    <!-- Sky: very dark navy blue -->
-    <a-sky color="#0a0a1a"></a-sky>
+  <a-scene fog="type: linear; color: #030303; near: 1; far: 8">
 
-    <!-- ========== LIGHTING ========== -->
-    <!-- Ambient: raised to make building colours clearly visible at night -->
-    <a-light type="ambient" color="#aab0cc" intensity="0.4"></a-light>
-    <!-- Soft fill from above to define rooflines -->
-    <a-light type="directional" color="#6677aa" intensity="0.3" position="0 10 -5"></a-light>
+    <!-- =========================================================
+         ASSETS: Procedural SVG textures
+         cobble-tex : single oval cobblestone, 32x32px = 0.3m tile
+         tile-tex   : Victorian glazed tile with grout border, 20x10px = 0.2x0.1m tile
+    ========================================================= -->
+    <a-assets>
+      <img id="cobble-tex"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23101010'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='12' fill='%23222222'/%3E%3C/svg%3E">
+      <img id="tile-tex"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Crect width='20' height='10' fill='%23004225'/%3E%3Crect x='0' y='0' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='8.5' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3Crect x='18.5' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3C/svg%3E">
+    </a-assets>
 
-    <!-- Flickering warm pub door light -->
+    <!-- SKY: pitch black -->
+    <a-sky color="#000000"></a-sky>
+
+    <!-- =========================================================
+         LIGHTING
+    ========================================================= -->
+
+    <!-- Cool night ambient — enough to read building colours clearly -->
+    <a-light type="ambient" color="#aab5c8" intensity="1.5"></a-light>
+    <!-- Soft directional fill to define rooflines and depth -->
+    <a-light type="directional" color="#334466" intensity="0.3" position="0 8 -3"></a-light>
+
+    <!-- Warm orange pub-door light: flickering leak from under the door -->
+    <!-- Door world position ≈ (-2.05, 0.2, -0.3) derived from corner entity -->
     <a-light
       type="point"
-      color="#b8860b"
-      intensity="0.9"
+      color="#ffaa00"
+      intensity="1.2"
       distance="5"
-      position="-2.65 0.15 -3.5"
-      animation="property: light.intensity; from: 0.5; to: 1.3; dur: 200; dir: alternate; loop: true; easing: easeInOutSine">
+      position="-2.05 0.2 -0.3"
+      animation="property: light.intensity; from: 0.7; to: 1.6; dur: 220; dir: alternate; loop: true; easing: easeInOutSine">
     </a-light>
 
-    <!-- ========== STREET & PAVEMENTS ========== -->
+    <!-- Faint orange glow inside the pub — silhouettes blast tape from behind -->
+    <a-light type="point" color="#ff5500" intensity="0.3" distance="2.5" position="-2.1 1.7 -2.2"></a-light>
+    <a-light type="point" color="#ff5500" intensity="0.2" distance="2.0" position="-2.1 3.8 -2.2"></a-light>
 
-    <!-- Cobblestone street: 4m wide, 13m long, dark rough grey -->
+    <!-- =========================================================
+         WET COBBLESTONE GROUND
+         roughness:0.2 metalness:0.1 — low roughness creates the
+         rain-washed "puddle" reflections of the pub light.
+         repeat:12 37 → ~0.3m cobblestones across 3.5m x 11m
+    ========================================================= -->
     <a-plane
-      position="0 0 -6"
+      position="0 0 -4.5"
       rotation="-90 0 0"
-      width="4"
-      height="13"
-      color="#2a2724">
+      width="3.5"
+      height="11"
+      material="src: #cobble-tex; roughness: 0.2; metalness: 0.1; repeat: 12 37">
     </a-plane>
 
-    <!-- Left pavement (raised kerb) -->
+    <!-- Pavements (kerbs) — 0.12m high, flush with buildings -->
+    <a-box position="-2.5 0.06 -4.5" width="1.5" height="0.12" depth="11" color="#383530"></a-box>
+    <a-box position=" 2.5 0.06 -4.5" width="1.5" height="0.12" depth="11" color="#383530"></a-box>
+
+    <!-- =========================================================
+         THE ROYAL OAK — PUB BUILDING (LEFT SIDE)
+         Inner wall face sits at x = -1.75 (street edge).
+         Building centre: x = -2.5, width = 1.5m.
+         Walls split: bottom 1.2m = Victorian glazed tile (PBR shiny),
+                      above 1.2m  = sooty London brick (PBR matte).
+         Side wall runs from z = -0.75 to z = -10 (corner bevel covers z = 0 to -0.75).
+    ========================================================= -->
+
+    <!-- SIDE WALL — tile band (bottom 1.2m) -->
+    <!-- repeat:46 12 → tiles 0.2m wide x 0.1m tall on the 9.25m x 1.2m face -->
     <a-box
-      position="-2.4 0.06 -6"
-      width="0.8"
-      height="0.12"
-      depth="13"
-      color="#3a3835">
+      position="-2.5 0.6 -5.375"
+      width="1.5" height="1.2" depth="9.25"
+      material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 46 12">
+    </a-box>
+    <!-- SIDE WALL — sooty brick (1.2m to 5.5m) -->
+    <a-box
+      position="-2.5 3.35 -5.375"
+      width="1.5" height="4.3" depth="9.25"
+      material="color: #4a3728; roughness: 0.9; metalness: 0">
+    </a-box>
+    <!-- SIDE WALL — roofline cap -->
+    <a-box
+      position="-2.5 5.75 -5.375"
+      width="1.55" height="0.3" depth="9.45"
+      material="color: #2e2015; roughness: 0.9">
     </a-box>
 
-    <!-- Right pavement (raised kerb) -->
+    <!-- SHORT RETURN WALL (perpendicular, far left of alley entrance) -->
     <a-box
-      position="2.4 0.06 -6"
-      width="0.8"
-      height="0.12"
-      depth="13"
-      color="#3a3835">
-    </a-box>
-
-    <!-- ========== LEFT SIDE BUILDINGS ========== -->
-
-    <!-- The Royal Oak pub: dark red, 5.5m tall -->
-    <a-box
-      position="-3.3 2.75 -3"
-      width="1.2"
-      height="5.5"
-      depth="6"
-      color="#3b1010">
-    </a-box>
-    <!-- Pub roofline cap -->
-    <a-box
-      position="-3.3 5.7 -3"
-      width="1.22"
-      height="0.4"
-      depth="6.2"
-      color="#2a0b0b">
-    </a-box>
-
-    <!-- Building 2: dark brown, slightly taller -->
-    <a-box
-      position="-3.3 3.0 -8"
-      width="1.2"
-      height="6.0"
-      depth="5"
-      color="#2b1a0a">
+      position="-3.25 0.6 0"
+      width="1.5" height="1.2" depth="0.4"
+      material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 8 12">
     </a-box>
     <a-box
-      position="-3.3 6.1 -8"
-      width="1.22"
-      height="0.3"
-      depth="5.2"
-      color="#1e1207">
-    </a-box>
-
-    <!-- Building 3: dark red, shorter -->
-    <a-box
-      position="-3.3 2.25 -11.5"
-      width="1.2"
-      height="4.5"
-      depth="3"
-      color="#3b1010">
-    </a-box>
-
-    <!-- ========== RIGHT SIDE BUILDINGS ========== -->
-
-    <!-- Building 4: dark brown, tallest -->
-    <a-box
-      position="3.3 3.0 -3.5"
-      width="1.2"
-      height="6.0"
-      depth="6"
-      color="#2b1a0a">
+      position="-3.25 3.35 0"
+      width="1.5" height="4.3" depth="0.4"
+      material="color: #4a3728; roughness: 0.9">
     </a-box>
     <a-box
-      position="3.3 6.1 -3.5"
-      width="1.22"
-      height="0.3"
-      depth="6.2"
-      color="#1e1207">
+      position="-3.25 5.75 0"
+      width="1.55" height="0.3" depth="0.6"
+      material="color: #2e2015; roughness: 0.9">
     </a-box>
 
-    <!-- Building 5: dark red -->
+    <!-- =========================================================
+         45-DEGREE CORNER ENTRANCE
+         The bevel cuts across the corner at x=-1.75, z=0.
+         Each wall recedes 0.75m → diagonal length = 0.75√2 ≈ 1.06m.
+         Entity positioned at midpoint of diagonal, rotated 45°.
+         All children use LOCAL coordinates (x=along diagonal, z=depth into wall).
+    ========================================================= -->
+    <a-entity position="-2.125 0 -0.375" rotation="0 45 0">
+
+      <!-- Tile band on diagonal face -->
+      <a-box
+        position="0 0.6 -0.21"
+        width="1.08" height="1.2" depth="0.42"
+        material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 5 12">
+      </a-box>
+      <!-- Sooty brick above tile band -->
+      <a-box
+        position="0 3.35 -0.21"
+        width="1.08" height="4.3" depth="0.42"
+        material="color: #4a3728; roughness: 0.9">
+      </a-box>
+      <!-- Roofline cap -->
+      <a-box
+        position="0 5.75 -0.21"
+        width="1.12" height="0.3" depth="0.46"
+        material="color: #2e2015; roughness: 0.9">
+      </a-box>
+
+      <!-- Recessed doorway — very dark alcove box simulates depth -->
+      <a-box
+        position="0 1.1 0.05"
+        width="0.9" height="2.22" depth="0.24"
+        material="color: #040100; roughness: 1.0">
+      </a-box>
+
+      <!-- Double doors -->
+      <a-box
+        position="-0.22 1.0 0.14"
+        width="0.42" height="2.0" depth="0.06"
+        material="color: #3d1f00; roughness: 0.8">
+      </a-box>
+      <a-box
+        position=" 0.22 1.0 0.14"
+        width="0.42" height="2.0" depth="0.06"
+        material="color: #3d1f00; roughness: 0.8">
+      </a-box>
+
+      <!-- Wooden step at base of door -->
+      <a-box
+        position="0 0.1 0.3"
+        width="0.96" height="0.2" depth="0.44"
+        material="color: #2a2724; roughness: 0.85">
+      </a-box>
+
+    </a-entity>
+    <!-- END CORNER ENTITY -->
+
+    <!-- =========================================================
+         PUB SIGN — hanging board projecting from side wall
+         Sign face (visible from street, facing +x) at x ≈ -1.63
+    ========================================================= -->
     <a-box
-      position="3.3 2.75 -8"
-      width="1.2"
-      height="5.5"
-      depth="5"
-      color="#3b1010">
+      position="-1.71 3.0 -2.2"
+      width="0.12" height="0.52" depth="1.85"
+      material="color: #4a2800; roughness: 0.85">
     </a-box>
+    <!-- Bracket arm -->
     <a-box
-      position="3.3 5.7 -8"
-      width="1.22"
-      height="0.4"
-      depth="5.2"
-      color="#2a0b0b">
-    </a-box>
-
-    <!-- Building 6: dark brown, shorter -->
-    <a-box
-      position="3.3 2.5 -11.5"
-      width="1.2"
-      height="5.0"
-      depth="3"
-      color="#2b1a0a">
-    </a-box>
-
-    <!-- ========== WINDOWS - LEFT BUILDINGS ========== -->
-
-    <!-- Pub ground floor windows (blackout curtains) -->
-    <a-box position="-2.68 1.5 -1.8" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="-2.68 1.5 -3.2" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <!-- Pub upper floor windows (blackout curtains) -->
-    <a-box position="-2.68 3.6 -1.8" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="-2.68 3.6 -3.2" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <!-- Tiny glowing yellow gap: light leaking through blackout curtain above pub -->
-    <a-box
-      position="-2.67 3.1 -1.8"
-      width="0.04"
-      height="0.04"
-      depth="0.75"
-      material="color: #d4a017; emissive: #d4a017; emissiveIntensity: 1.5">
-    </a-box>
-
-    <!-- Building 2 windows -->
-    <a-box position="-2.68 2.0 -7.0" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="-2.68 2.0 -8.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="-2.68 4.3 -7.0" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="-2.68 4.3 -8.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-
-    <!-- ========== WINDOWS - RIGHT BUILDINGS ========== -->
-
-    <!-- Building 4 -->
-    <a-box position="2.68 2.0 -2.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="2.68 2.0 -4.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="2.68 4.3 -2.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="2.68 4.3 -4.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <!-- Building 5 -->
-    <a-box position="2.68 2.5 -7.0" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="2.68 2.5 -8.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-    <a-box position="2.68 4.5 -7.5" width="0.04" height="1.0" depth="0.9" color="#0d0a0a"></a-box>
-
-    <!-- ========== PUB DETAILS ========== -->
-
-    <!-- Pub door: tall dark brown, 2m high -->
-    <a-box
-      position="-2.68 1.0 -3.5"
-      width="0.04"
-      height="2.0"
-      depth="0.75"
-      color="#3d1f00">
-    </a-box>
-    <!-- Door frame surround -->
-    <a-box
-      position="-2.67 1.0 -3.5"
-      width="0.03"
-      height="2.12"
-      depth="0.88"
+      position="-1.77 3.3 -2.2"
+      width="0.05" height="0.64" depth="0.05"
       color="#2a1500">
     </a-box>
-
-    <!-- Pub sign: wooden board projecting from wall -->
-    <a-box
-      position="-2.46 2.85 -2.8"
-      width="0.1"
-      height="0.48"
-      depth="1.4"
-      color="#4a2800">
-    </a-box>
-    <!-- Sign bracket arm -->
-    <a-box
-      position="-2.65 3.12 -2.8"
-      width="0.04"
-      height="0.6"
-      depth="0.05"
-      color="#2a1500">
-    </a-box>
-    <!-- Sign text: sits flush on the front face of the board -->
+    <!-- Sign text flush on front face of board (x=-1.64, 1cm clearance) -->
     <a-text
       value="The Royal Oak"
-      position="-2.40 2.85 -2.8"
+      position="-1.64 3.0 -2.2"
       rotation="0 90 0"
       color="#c8a84a"
-      width="1.5"
+      width="2.0"
       align="center">
     </a-text>
 
-    <!-- Sandbags: wide, flat sacks stacked at knee height around pub door -->
-    <!-- Bottom row -->
-    <a-box position="-2.60 0.09 -4.4"  width="0.22" height="0.17" depth="0.50" color="#5c4a1e"></a-box>
-    <a-box position="-2.60 0.09 -4.88" width="0.22" height="0.17" depth="0.50" color="#4e3e18"></a-box>
-    <a-box position="-2.60 0.09 -5.28" width="0.20" height="0.16" depth="0.46" color="#5c4a1e"></a-box>
-    <!-- Second row (offset for organic look) -->
-    <a-box position="-2.59 0.27 -4.62" width="0.21" height="0.16" depth="0.50" color="#4e3e18"></a-box>
-    <a-box position="-2.59 0.27 -5.06" width="0.21" height="0.16" depth="0.48" color="#5c4a1e"></a-box>
-    <!-- Top single bag -->
-    <a-box position="-2.58 0.44 -4.84" width="0.20" height="0.15" depth="0.44" color="#4e3e18"></a-box>
+    <!-- =========================================================
+         WINDOWS — PUB SIDE WALL (4 windows, blast-tape X on each)
+         Window: 0.65m wide (z) x 1.3m tall (y)
+         Diagonal of pane ≈ 1.45m; angle from vertical ≈ 26.5°
+         Tape strips rotated ±26.5° around X axis (in the YZ face plane)
+         Inner glow light silhouettes tape from behind on upper-left window.
+    ========================================================= -->
 
-    <!-- ========== HISTORICAL PROPS ========== -->
+    <!-- Ground floor, window 1 (z=-2.2) -->
+    <a-box position="-1.748 1.7 -2.2" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
+    <a-box position="-1.732 1.7 -2.2" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
+    <a-box position="-1.72 1.7 -2.2" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="26.5 0 0"></a-box>
+    <a-box position="-1.72 1.7 -2.2" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
 
-    <!-- Pillar box (postbox): dark red cylinder on right pavement -->
+    <!-- Ground floor, window 2 (z=-3.8) -->
+    <a-box position="-1.748 1.7 -3.8" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
+    <a-box position="-1.732 1.7 -3.8" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
+    <a-box position="-1.72 1.7 -3.8" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="26.5 0 0"></a-box>
+    <a-box position="-1.72 1.7 -3.8" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
+
+    <!-- Upper floor, window 1 (z=-2.2) — has glowing gap -->
+    <a-box position="-1.748 3.8 -2.2" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
+    <a-box position="-1.732 3.8 -2.2" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
+    <a-box position="-1.72 3.8 -2.2" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="26.5 0 0"></a-box>
+    <a-box position="-1.72 3.8 -2.2" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
+    <!-- Tiny glowing gap at bottom of upper window — light leaking through curtain -->
+    <a-box
+      position="-1.718 3.12 -2.2"
+      width="0.03" height="0.04" depth="0.52"
+      material="color: #d4a017; emissive: #d4a017; emissiveIntensity: 1.5">
+    </a-box>
+
+    <!-- Upper floor, window 2 (z=-3.8) -->
+    <a-box position="-1.748 3.8 -3.8" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
+    <a-box position="-1.732 3.8 -3.8" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
+    <a-box position="-1.72 3.8 -3.8" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="26.5 0 0"></a-box>
+    <a-box position="-1.72 3.8 -3.8" width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
+
+    <!-- =========================================================
+         DUCKETT'S PASSAGE — OPPOSING BUILDING (RIGHT, 6m TALL)
+         Creates the claustrophobic canyon. Sooty brick, no tiles.
+         Two small high windows with blackout curtains.
+    ========================================================= -->
+    <a-box
+      position="2.5 3.0 -5"
+      width="1.5" height="6.0" depth="10"
+      material="color: #3e2e20; roughness: 0.9; metalness: 0">
+    </a-box>
+    <!-- Roofline cap -->
+    <a-box
+      position="2.5 6.15 -5"
+      width="1.55" height="0.3" depth="10.2"
+      material="color: #2a1e14; roughness: 0.9">
+    </a-box>
+
+    <!-- High small windows (blackout), no blast tape — too high to reach -->
+    <a-box position="1.745 4.8 -2.0" width="0.06" height="0.85" depth="0.6"  color="#180c00"></a-box>
+    <a-box position="1.730 4.8 -2.0" width="0.04" height="0.72" depth="0.48" material="color: #060606; roughness: 1"></a-box>
+    <a-box position="1.745 4.8 -3.8" width="0.06" height="0.85" depth="0.6"  color="#180c00"></a-box>
+    <a-box position="1.730 4.8 -3.8" width="0.04" height="0.72" depth="0.48" material="color: #060606; roughness: 1"></a-box>
+
+    <!-- =========================================================
+         HISTORICAL PROPS
+    ========================================================= -->
+
+    <!-- PILLAR BOX (right pavement): 1.5m tall red cylinder, gas-yellow cap -->
     <a-cylinder
-      position="2.2 0.86 -5.0"
-      radius="0.2"
-      height="1.4"
-      color="#6b0000">
+      position="2.2 0.75 -2.5"
+      radius="0.2" height="1.5"
+      material="color: #8b0000; roughness: 0.45; metalness: 0.15">
     </a-cylinder>
-    <!-- Postbox crown cap: pale yellow -->
     <a-cylinder
-      position="2.2 1.61 -5.0"
-      radius="0.21"
-      height="0.1"
-      color="#d4a017">
+      position="2.2 1.6 -2.5"
+      radius="0.21" height="0.2"
+      material="color: #fdfd96; roughness: 0.35; metalness: 0.1">
     </a-cylinder>
 
-    <!-- Victorian streetlamp (completely unlit) on left pavement -->
-    <!-- Lamp pole -->
-    <a-cylinder
-      position="-2.2 1.66 -8.0"
-      radius="0.04"
-      height="3.32"
-      color="#2a2a2a">
-    </a-cylinder>
-    <!-- Lamp arm extending toward street -->
-    <a-box
-      position="-2.05 3.2 -8.0"
-      width="0.32"
-      height="0.04"
-      depth="0.04"
-      color="#2a2a2a">
-    </a-box>
-    <!-- Lamp head -->
-    <a-box
-      position="-1.88 3.12 -8.0"
-      width="0.2"
-      height="0.25"
-      depth="0.2"
-      color="#2a2a2a">
-    </a-box>
+    <!-- MILK CHURNS x3 (left pavement, near pub entrance) -->
+    <a-cylinder position="-1.50 0.4 -1.5"  radius="0.13" height="0.8"
+      material="color: #b8b8b8; roughness: 0.3; metalness: 0.65"></a-cylinder>
+    <a-cylinder position="-1.62 0.4 -1.95" radius="0.13" height="0.8"
+      material="color: #a8a8a8; roughness: 0.3; metalness: 0.65"></a-cylinder>
+    <a-cylinder position="-1.50 0.4 -2.35" radius="0.13" height="0.8"
+      material="color: #b2b2b2; roughness: 0.3; metalness: 0.65"></a-cylinder>
 
-    <!-- Vintage bicycle leaning against right wall -->
-    <!-- Back wheel -->
-    <a-cylinder
-      position="2.55 0.3 -7.8"
-      radius="0.28"
-      height="0.05"
-      color="#1a1a1a"
-      rotation="0 0 90">
-    </a-cylinder>
-    <!-- Front wheel -->
-    <a-cylinder
-      position="2.55 0.3 -7.0"
-      radius="0.28"
-      height="0.05"
-      color="#1a1a1a"
-      rotation="0 0 90">
-    </a-cylinder>
-    <!-- Top tube (frame) -->
-    <a-box
-      position="2.58 0.68 -7.4"
-      width="0.05"
-      height="0.04"
-      depth="0.85"
-      color="#222222"
-      rotation="0 0 4">
-    </a-box>
-    <!-- Down tube -->
-    <a-box
-      position="2.56 0.46 -7.15"
-      width="0.04"
-      height="0.55"
-      depth="0.5"
-      color="#222222"
-      rotation="15 0 4">
-    </a-box>
-    <!-- Seat post -->
-    <a-box
-      position="2.58 0.9 -7.75"
-      width="0.04"
-      height="0.42"
-      depth="0.04"
-      color="#222222">
-    </a-box>
-    <!-- Handlebars -->
-    <a-box
-      position="2.56 0.95 -7.0"
-      width="0.04"
-      height="0.04"
-      depth="0.32"
-      color="#333333">
-    </a-box>
+    <!-- WOODEN CRATES x2 stacked (left pavement, near pub) -->
+    <a-box position="-1.58 0.27 -3.1" width="0.52" height="0.54" depth="0.52"
+      material="color: #5c4033; roughness: 0.95"></a-box>
+    <a-box position="-1.56 0.82 -3.1" width="0.47" height="0.50" depth="0.47"
+      material="color: #4e3629; roughness: 0.95"></a-box>
 
-    <!-- ========== SEARCHLIGHTS IN THE SKY ========== -->
+    <!-- SANDBAGS stacked at corner entrance (knee-height, wide flat sacks) -->
+    <a-box position="-1.92 0.09 -0.50" width="0.22" height="0.17" depth="0.50" color="#5c4a1e"></a-box>
+    <a-box position="-1.95 0.09 -0.90" width="0.22" height="0.17" depth="0.50" color="#4e3e18"></a-box>
+    <a-box position="-1.90 0.09 -1.30" width="0.20" height="0.16" depth="0.46" color="#5c4a1e"></a-box>
+    <a-box position="-1.93 0.27 -0.70" width="0.21" height="0.16" depth="0.50" color="#4e3e18"></a-box>
+    <a-box position="-1.91 0.27 -1.10" width="0.21" height="0.16" depth="0.48" color="#5c4a1e"></a-box>
+    <a-box position="-1.92 0.44 -0.90" width="0.20" height="0.15" depth="0.44" color="#4e3e18"></a-box>
 
-    <!-- Searchlight 1: sweeps left to right -->
-    <a-cone
-      position="-3 10 -14"
-      radius-bottom="0.2"
-      radius-top="7"
-      height="20"
-      material="color: #c8c8ff; transparent: true; opacity: 0.09; side: double"
-      animation="property: rotation; from: 0 0 -22; to: 0 0 22; dur: 7000; dir: alternate; loop: true; easing: easeInOutSine">
-    </a-cone>
+    <!-- VICTORIAN STREETLAMP (unlit — blacked out for the war) -->
+    <a-cylinder position="-2.0 1.5 -5.0"  radius="0.04" height="3.0"  color="#2a2a2a"></a-cylinder>
+    <a-box      position="-1.85 3.1 -5.0" width="0.30" height="0.04" depth="0.04" color="#2a2a2a"></a-box>
+    <a-box      position="-1.70 3.02 -5.0" width="0.22" height="0.25" depth="0.22" color="#2a2a2a"></a-box>
 
-    <!-- Searchlight 2: offset timing, sweeps opposite direction -->
-    <a-cone
-      position="4 10 -11"
-      radius-bottom="0.2"
-      radius-top="6"
-      height="18"
-      material="color: #c8c8ff; transparent: true; opacity: 0.09; side: double"
-      animation="property: rotation; from: 0 0 -18; to: 0 0 20; dur: 5500; dir: alternate; loop: true; easing: easeInOutSine; delay: 2500">
-    </a-cone>
+    <!-- =========================================================
+         VOLUMETRIC SEARCHLIGHTS
+         Two pale-white cones (#ffffff, opacity 0.2) sweeping the sky.
+         Figure-8 path: outer entity sweeps left/right (Z rotation),
+           inner entity tilts forward/back (X rotation) at a different
+           period — the incommensurable durations create a Lissajous
+           figure approximating a figure-eight.
+         Innermost entity adds a constant 85ms micro-jitter.
+         Speeds ≈ 3× the original 7000ms / 5500ms sweeps.
+    ========================================================= -->
 
-    <!-- ========== POSITIONAL AUDIO at pub door ========== -->
+    <!-- Searchlight 1 (left of alley) -->
+    <a-entity position="-1.5 10 -8"
+      animation="property: rotation; from: 0 0 -25; to: 0 0 25; dur: 2300; dir: alternate; loop: true; easing: easeInOutSine">
+      <a-entity
+        animation="property: rotation; from: -8 0 0; to: 8 0 0; dur: 1600; dir: alternate; loop: true; easing: easeInOutSine">
+        <a-entity
+          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 85; dir: alternate; loop: true; easing: linear">
+          <a-cone
+            radius-bottom="0.2" radius-top="7" height="20"
+            material="color: #ffffff; transparent: true; opacity: 0.2; side: double">
+          </a-cone>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Searchlight 2 (right of alley, offset phase) -->
+    <a-entity position="2 10 -7"
+      animation="property: rotation; from: 0 0 -20; to: 0 0 20; dur: 1900; dir: alternate; loop: true; easing: easeInOutSine; delay: 1200">
+      <a-entity
+        animation="property: rotation; from: -6 0 0; to: 6 0 0; dur: 1300; dir: alternate; loop: true; easing: easeInOutSine; delay: 800">
+        <a-entity
+          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 90; dir: alternate; loop: true; easing: linear">
+          <a-cone
+            radius-bottom="0.2" radius-top="6" height="18"
+            material="color: #ffffff; transparent: true; opacity: 0.2; side: double">
+          </a-cone>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- =========================================================
+         AUDIO
+    ========================================================= -->
+
+    <!-- vera.mp3: spatialized at pub door world position -->
     <a-sound
       src="vera.mp3"
       autoplay="true"
       loop="true"
       positional="true"
       rolloff-factor="2"
-      max-distance="20"
-      position="-2.65 1 -3.5">
+      max-distance="15"
+      position="-2.05 1 -0.3">
     </a-sound>
 
-    <!-- Camera / player start position -->
-    <a-entity position="0 1.6 0">
-      <a-camera look-controls wasd-controls></a-camera>
+    <!-- blitz.mp3: global ambient loop (add blitz.mp3 to project folder) -->
+    <a-sound
+      src="blitz.mp3"
+      autoplay="true"
+      loop="true"
+      positional="false">
+    </a-sound>
+
+    <!-- =========================================================
+         CAMERA
+         Spawns in centre of alley, 3m from the Royal Oak sign,
+         looking slightly up and left toward the sign at y=3.0.
+         look-controls lets the user pan freely in flatscreen/VR.
+    ========================================================= -->
+    <a-entity position="0 1.6 1">
+      <a-camera rotation="-15 -25 0" look-controls wasd-controls></a-camera>
     </a-entity>
 
   </a-scene>
