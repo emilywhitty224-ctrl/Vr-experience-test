@@ -49,10 +49,13 @@
          tile-tex   : Victorian glazed tile with grout border, 20x10px = 0.2x0.1m tile
     ========================================================= -->
     <a-assets>
-      <img id="cobble-tex"
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23101010'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='12' fill='%23222222'/%3E%3C/svg%3E">
+      <!-- Procedural tile grout texture (Victorian glazed tiles) -->
       <img id="tile-tex"
         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Crect width='20' height='10' fill='%23004225'/%3E%3Crect x='0' y='0' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='8.5' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3Crect x='18.5' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3C/svg%3E">
+      <!-- High-res PBR street textures -->
+      <img id="street-diff"  src="street_diffuse.jpg">
+      <img id="street-norm"  src="street_normal.jpg">
+      <img id="street-rough" src="street_roughness.jpg">
     </a-assets>
 
     <!-- SKY: pitch black -->
@@ -88,12 +91,16 @@
          rain-washed "puddle" reflections of the pub light.
          repeat:12 37 → ~0.3m cobblestones across 3.5m x 11m
     ========================================================= -->
+    <!-- repeat:10 10 → human-scaled cobblestones in VR -->
+    <!-- roughness:0.3 → damp post-rain London look                -->
+    <!-- normalScale:1.5 1.5 → deep realistic cobblestone cracks   -->
     <a-plane
       position="0 0 -4.5"
       rotation="-90 0 0"
       width="3.5"
       height="11"
-      material="src: #cobble-tex; roughness: 0.2; metalness: 0.1; repeat: 12 37">
+      material="src: #street-diff; normalMap: #street-norm; roughnessMap: #street-rough;
+                roughness: 0.3; normalScale: 1.5 1.5; repeat: 10 10">
     </a-plane>
 
     <!-- Pavements (kerbs) — 0.12m high, flush with buildings -->
@@ -352,7 +359,8 @@
           animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 85; dir: alternate; loop: true; easing: linear">
           <a-cone
             radius-bottom="0.2" radius-top="7" height="20"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double">
+            material="color: #ffffff; transparent: true; opacity: 0.2; side: double"
+            animation__flicker="property: material.opacity; from: 0.13; to: 0.22; dur: 480; dir: alternate; loop: true; easing: easeInOutSine">
           </a-cone>
         </a-entity>
       </a-entity>
@@ -367,7 +375,8 @@
           animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 90; dir: alternate; loop: true; easing: linear">
           <a-cone
             radius-bottom="0.2" radius-top="6" height="18"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double">
+            material="color: #ffffff; transparent: true; opacity: 0.2; side: double"
+            animation__flicker="property: material.opacity; from: 0.10; to: 0.20; dur: 620; dir: alternate; loop: true; easing: easeInOutSine">
           </a-cone>
         </a-entity>
       </a-entity>
@@ -388,12 +397,13 @@
       position="-2.05 1 -0.3">
     </a-sound>
 
-    <!-- blitz.mp3: global ambient loop (add blitz.mp3 to project folder) -->
+    <!-- blitz.mp3: global ambient Blitz loop, low volume so it sits under vera.mp3 -->
     <a-sound
       src="blitz.mp3"
       autoplay="true"
       loop="true"
-      positional="false">
+      positional="false"
+      volume="0.2">
     </a-sound>
 
     <!-- =========================================================
