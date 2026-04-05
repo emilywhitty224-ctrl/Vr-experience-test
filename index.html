@@ -141,14 +141,14 @@
       position="-2.5 0.6 -5.375"
       width="1.5" height="1.2" depth="9.25"
       shadow="cast: true; receive: true"
-      material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 46 12">
+      material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 46 12">
     </a-box>
-    <!-- SIDE WALL — sooty London brick (1.2m–5.5m) -->
+    <!-- SIDE WALL — upper facade (1.2m–5.5m) -->
     <a-box
       position="-2.5 3.35 -5.375"
       width="1.5" height="4.3" depth="9.25"
       shadow="cast: true; receive: true"
-      material="color: #4a3728; roughness: 0.9">
+      material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 46 43">
     </a-box>
     <!-- SIDE WALL — roofline cap -->
     <a-box
@@ -158,8 +158,8 @@
     </a-box>
 
     <!-- SHORT RETURN WALL (perpendicular at alley entrance) -->
-    <a-box position="-3.25 0.6 0"  width="1.5" height="1.2" depth="0.4" material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 8 12"></a-box>
-    <a-box position="-3.25 3.35 0" width="1.5" height="4.3" depth="0.4" material="color: #4a3728; roughness: 0.9"></a-box>
+    <a-box position="-3.25 0.6 0"  width="1.5" height="1.2" depth="0.4" material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 8 12"></a-box>
+    <a-box position="-3.25 3.35 0" width="1.5" height="4.3" depth="0.4" material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 8 43"></a-box>
     <a-box position="-3.25 5.75 0" width="1.55" height="0.3" depth="0.6" material="color: #2e2015; roughness: 0.9"></a-box>
 
     <!-- LEFT CONTINUATION WALL — forward extension (z=-10 to z=-65, center z=-37.5, depth=55m) -->
@@ -184,13 +184,13 @@
         position="0 0.6 -0.21"
         width="1.08" height="1.2" depth="0.42"
         shadow="cast: true; receive: true"
-        material="src: #tile-tex; roughness: 0.1; metalness: 0.2; repeat: 5 12">
+        material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 5 12">
       </a-box>
-      <!-- Sooty brick above tile band -->
+      <!-- Upper facade above tile band -->
       <a-box
         position="0 3.35 -0.21"
         width="1.08" height="4.3" depth="0.42"
-        material="color: #4a3728; roughness: 0.9">
+        material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 5 43">
       </a-box>
       <!-- Roofline cap -->
       <a-box
@@ -206,19 +206,15 @@
         material="color: #040100; roughness: 1.0">
       </a-box>
 
-      <!-- Double doors -->
-      <a-box
-        position="-0.22 1.0 0.14"
-        width="0.42" height="2.0" depth="0.06"
-        shadow="cast: true; receive: true"
-        material="color: #3d1f00; roughness: 0.8">
-      </a-box>
-      <a-box
-        position=" 0.22 1.0 0.14"
-        width="0.42" height="2.0" depth="0.06"
-        shadow="cast: true; receive: true"
-        material="color: #3d1f00; roughness: 0.8">
-      </a-box>
+      <!-- Door -->
+      <a-entity rotation="0 45 0">
+        <a-box
+          position="0 1.0 0.14"
+          width="0.84" height="2.0" depth="0.06"
+          shadow="cast: true; receive: true"
+          material="color: #3d1f00; roughness: 0.8">
+        </a-box>
+      </a-entity>
 
       <!-- Wooden step at base -->
       <a-box
@@ -316,7 +312,7 @@
       id="lamp"
       src="#lamp-model"
       position="-1.5 0 -5.5"
-      scale="0.01 0.01 0.01"
+      scale="100 100 100"
       shadow="cast: true; receive: true">
     </a-gltf-model>
 
