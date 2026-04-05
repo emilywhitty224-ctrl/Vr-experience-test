@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WWII Blackout Street</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene>
+
+    <!-- Sky: pitch black -->
+    <a-sky color="#000000"></a-sky>
+
+    <!-- Ground: dark grey cobblestone street -->
+    <a-plane
+      position="0 0 -10"
+      rotation="-90 0 0"
+      width="6"
+      height="40"
+      color="#2a2a2a">
+    </a-plane>
+
+    <!-- Lighting: very dim ambient -->
+    <a-light type="ambient" color="#111111" intensity="0.4"></a-light>
+
+    <!-- Dim warm yellow point light leaking from pub door -->
+    <a-light
+      type="point"
+      color="#b8860b"
+      intensity="0.6"
+      distance="4"
+      position="-2.2 1 -5">
+    </a-light>
+
+    <!-- ========== LEFT SIDE BUILDINGS ========== -->
+
+    <!-- Building 1: dark red, near -->
+    <a-box
+      position="-3.5 2.5 -5"
+      width="3"
+      height="5"
+      depth="1"
+      color="#3b1010">
+    </a-box>
+
+    <!-- Building 2: dark brown, further -->
+    <a-box
+      position="-3.5 3 -11"
+      width="3"
+      height="6"
+      depth="1"
+      color="#2b1a0a">
+    </a-box>
+
+    <!-- Building 3: dark red, further still -->
+    <a-box
+      position="-3.5 2.5 -17"
+      width="3"
+      height="5"
+      depth="1"
+      color="#3b1010">
+    </a-box>
+
+    <!-- ========== RIGHT SIDE BUILDINGS ========== -->
+
+    <!-- Building 4: dark brown -->
+    <a-box
+      position="3.5 3 -5"
+      width="3"
+      height="6"
+      depth="1"
+      color="#2b1a0a">
+    </a-box>
+
+    <!-- Building 5: dark red -->
+    <a-box
+      position="3.5 2.5 -11"
+      width="3"
+      height="5"
+      depth="1"
+      color="#3b1010">
+    </a-box>
+
+    <!-- Building 6: dark brown -->
+    <a-box
+      position="3.5 3 -17"
+      width="3"
+      height="6"
+      depth="1"
+      color="#2b1a0a">
+    </a-box>
+
+    <!-- ========== PUB DETAILS (left side, Building 1) ========== -->
+
+    <!-- Pub door: dark brown -->
+    <a-box
+      position="-2.2 0.9 -4.45"
+      width="0.7"
+      height="1.8"
+      depth="0.05"
+      color="#3d1f00">
+    </a-box>
+
+    <!-- Pub sign: small flat box hanging over door -->
+    <a-box
+      position="-2.2 2.4 -4.2"
+      width="1.2"
+      height="0.4"
+      depth="0.08"
+      color="#4a2800">
+    </a-box>
+
+    <!-- Sandbags: stacked dull-brown boxes beside the door -->
+    <a-box
+      position="-1.6 0.2 -4.45"
+      width="0.5"
+      height="0.35"
+      depth="0.4"
+      color="#5c4a1e">
+    </a-box>
+    <a-box
+      position="-1.6 0.55 -4.45"
+      width="0.5"
+      height="0.35"
+      depth="0.4"
+      color="#4e3e18">
+    </a-box>
+    <a-box
+      position="-1.65 0.9 -4.45"
+      width="0.45"
+      height="0.35"
+      depth="0.38"
+      color="#5c4a1e">
+    </a-box>
+
+    <!-- ========== POSITIONAL AUDIO at pub door ========== -->
+    <a-sound
+      src="vera.mp3"
+      autoplay="true"
+      loop="true"
+      positional="true"
+      rolloff-factor="2"
+      max-distance="20"
+      position="-2.2 1 -4.45">
+    </a-sound>
+
+    <!-- Camera / player start position -->
+    <a-entity position="0 1.6 0">
+      <a-camera look-controls wasd-controls></a-camera>
+    </a-entity>
+
+  </a-scene>
+</body>
+</html>
