@@ -44,7 +44,7 @@
   -->
 
   <a-scene
-    fog="type: exponential; color: #050505; density: 0.07"
+    fog="type: exponential; color: #050505; density: 0.08"
     renderer="shadowMapEnabled: true; antialias: true"
     shadow="type: pcfsoft">
 
@@ -52,10 +52,18 @@
          ASSETS
     ========================================================= -->
     <a-assets>
-      <!-- Procedural Victorian glazed tile texture -->
+      <!-- Procedural Victorian glazed tile texture (fallback until PBR tiles load) -->
       <img id="tile-tex"
         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Crect width='20' height='10' fill='%23004225'/%3E%3Crect x='0' y='0' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='8.5' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3Crect x='18.5' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3C/svg%3E">
-      <!-- High-res PBR street textures -->
+      <!-- PBR pub tile (glazed green base, 0–1.2m) -->
+      <img id="pub-tile-diff"  src="pub_tile_diffuse.jpg">
+      <img id="pub-tile-norm"  src="pub_tile_normal.jpg">
+      <img id="pub-tile-rough" src="pub_tile_roughness.jpg">
+      <!-- PBR sandstone (upper facade, 1.2–4m) -->
+      <img id="sand-diff"  src="sandstone_diffuse.jpg">
+      <img id="sand-rough" src="Sandstone_Rough.jpg">
+      <img id="sand-ao"    src="sandstone_ao.jpg">
+      <!-- Cobblestone street PBR -->
       <img id="street-diff"  src="street_diffuse.jpg">
       <img id="street-norm"  src="street_normal.jpg">
       <img id="street-rough" src="street_roughness.jpg">
@@ -63,10 +71,13 @@
       <a-asset-item id="postbox-model" src="Postbox.glb"></a-asset-item>
       <a-asset-item id="bicycle-model" src="Bike.glb"></a-asset-item>
       <a-asset-item id="lamp-model"    src="Streetlamp.glb"></a-asset-item>
+      <!-- Audio -->
+      <audio id="vera-audio"  src="vera.mp3"  preload="auto"></audio>
+      <audio id="blitz-audio" src="blitz.mp3" preload="auto"></audio>
     </a-assets>
 
-    <!-- SKY: pitch black -->
-    <a-sky color="#000000"></a-sky>
+    <!-- SKY: blackout smog -->
+    <a-sky color="#050505"></a-sky>
 
     <!-- =========================================================
          LIGHTING
@@ -220,51 +231,6 @@
     </a-entity>
 
     <!-- =========================================================
-         PUB SIGN — 3D IRON BRACKET + SWINGING BOARD
-         Bracket projects from wall (x=-1.75) into the street (+x direction).
-         Pendulum pivot at bracket tip; sign hangs below and sways in the breeze.
-    ========================================================= -->
-
-    <!-- Horizontal bracket arm (wall face at x=-1.75, tip at x≈-1.1) -->
-    <a-box position="-1.425 3.45 -2.2" width="0.65" height="0.06" depth="0.06"
-      material="color: #1c1c1c; roughness: 0.55; metalness: 0.9"></a-box>
-    <!-- Diagonal support brace -->
-    <a-box position="-1.630 3.23 -2.2" width="0.30" height="0.06" depth="0.06"
-      rotation="0 0 -45"
-      material="color: #1c1c1c; roughness: 0.55; metalness: 0.9"></a-box>
-    <!-- Wall mounting plate -->
-    <a-box position="-1.74 3.38 -2.2" width="0.06" height="0.28" depth="0.18"
-      material="color: #1a1a1a; roughness: 0.6; metalness: 0.9"></a-box>
-
-    <!-- Pendulum pivot at bracket tip — sign hangs and sways -->
-    <a-entity position="-1.1 3.45 -2.2"
-      animation="property: rotation; from: 0 0 -6; to: 0 0 6; dur: 2800; dir: alternate; loop: true; easing: easeInOutSine">
-      <!-- Short hanging chain rod -->
-      <a-box position="0 -0.16 0" width="0.025" height="0.32" depth="0.025"
-        material="color: #1c1c1c; roughness: 0.65; metalness: 0.8"></a-box>
-      <!-- Sign board (hangs below) -->
-      <a-entity position="0 -0.6 0">
-        <a-box width="0.07" height="0.58" depth="1.65"
-          material="color: #4a2800; roughness: 0.85"></a-box>
-        <!-- Gold decorative border strips -->
-        <a-box position="0.045  0.25 0" width="0.02" height="0.03" depth="1.45"
-          material="color: #c8a84a; roughness: 0.6; emissive: #403010; emissiveIntensity: 0.5"></a-box>
-        <a-box position="0.045 -0.25 0" width="0.02" height="0.03" depth="1.45"
-          material="color: #c8a84a; roughness: 0.6; emissive: #403010; emissiveIntensity: 0.5"></a-box>
-        <!-- Sign text — street-facing side (+x) -->
-        <a-text value="The Royal Oak"
-          position="0.045 0 0" rotation="0 90 0"
-          color="#c8a84a" width="2.2" align="center">
-        </a-text>
-        <!-- Sign text — back side (-x) -->
-        <a-text value="The Royal Oak"
-          position="-0.045 0 0" rotation="0 -90 0"
-          color="#c8a84a" width="2.2" align="center">
-        </a-text>
-      </a-entity>
-    </a-entity>
-
-    <!-- =========================================================
          WINDOWS — PUB SIDE WALL (4 windows, WWII blast-tape X)
     ========================================================= -->
 
@@ -354,42 +320,62 @@
       shadow="cast: true; receive: true">
     </a-gltf-model>
 
-    <!-- MILK CHURNS x3 (left pavement, near pub entrance) -->
-    <a-cylinder position="-1.50 0.4 -1.5"  radius="0.13" height="0.8" shadow="cast: true; receive: true" material="color: #b8b8b8; roughness: 0.3; metalness: 0.65"></a-cylinder>
-    <a-cylinder position="-1.62 0.4 -1.95" radius="0.13" height="0.8" shadow="cast: true; receive: true" material="color: #a8a8a8; roughness: 0.3; metalness: 0.65"></a-cylinder>
-    <a-cylinder position="-1.50 0.4 -2.35" radius="0.13" height="0.8" shadow="cast: true; receive: true" material="color: #b2b2b2; roughness: 0.3; metalness: 0.65"></a-cylinder>
-
-    <!-- WOODEN CRATES x2 stacked (left pavement) -->
-    <a-box position="-1.58 0.27 -3.1" width="0.52" height="0.54" depth="0.52" shadow="cast: true; receive: true" material="color: #5c4033; roughness: 0.95"></a-box>
-    <a-box position="-1.56 0.82 -3.1" width="0.47" height="0.50" depth="0.47" shadow="cast: true; receive: true" material="color: #4e3629; roughness: 0.95"></a-box>
-
-    <!-- SANDBAGS stacked at corner entrance -->
-    <a-box position="-1.92 0.09 -0.50" width="0.22" height="0.17" depth="0.50" shadow="cast: true; receive: true" color="#5c4a1e"></a-box>
-    <a-box position="-1.95 0.09 -0.90" width="0.22" height="0.17" depth="0.50" shadow="cast: true; receive: true" color="#4e3e18"></a-box>
-    <a-box position="-1.90 0.09 -1.30" width="0.20" height="0.16" depth="0.46" shadow="cast: true; receive: true" color="#5c4a1e"></a-box>
-    <a-box position="-1.93 0.27 -0.70" width="0.21" height="0.16" depth="0.50" shadow="cast: true; receive: true" color="#4e3e18"></a-box>
-    <a-box position="-1.91 0.27 -1.10" width="0.21" height="0.16" depth="0.48" shadow="cast: true; receive: true" color="#5c4a1e"></a-box>
-    <a-box position="-1.92 0.44 -0.90" width="0.20" height="0.15" depth="0.44" shadow="cast: true; receive: true" color="#4e3e18"></a-box>
-
     <!-- =========================================================
-         BOMBED-OUT LONDON SKYLINE SILHOUETTES
-         Dark irregular box clusters at both alley ends.
-         Exponential fog at density 0.07 blends them into the smog.
+         L-JUNCTION BACKGROUND BUILDINGS
+         Unlit sooty red-brown block masses (color: #3a1f12).
+         Layout: main alley runs along -Z; junction opens to the right (+X)
+         at around z=-12. The cross-street arm extends to x=+20.
+         Fog at density 0.08 swallows detail beyond ~15m.
     ========================================================= -->
 
-    <!-- Far end (z -65 to -75) -->
-    <a-box position="-0.5 4.0 -67" width="8"  height="8"  depth="4" material="color: #050505; roughness: 1"></a-box>
-    <a-box position=" 1.2 7.0 -70" width="5"  height="14" depth="5" material="color: #030303; roughness: 1"></a-box>
-    <a-box position="-1.8 3.0 -65" width="6"  height="6"  depth="3" material="color: #040404; roughness: 1"></a-box>
-    <a-box position=" 2.8 5.5 -72" width="4"  height="11" depth="6" material="color: #050505; roughness: 1"></a-box>
-    <a-box position="-3.0 2.5 -68" width="3"  height="5"  depth="4" material="color: #030303; roughness: 1"></a-box>
+    <!-- === MAIN ALLEY — buildings lining the right side (z=0 to z=-12) === -->
+    <!-- Block A: near corner, 6m wide, 8m tall -->
+    <a-box position="5 4 -3"  width="6"  height="8"  depth="6"
+      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
+    <!-- Block B: mid-alley right, slightly taller -->
+    <a-box position="5 5 -9"  width="6"  height="10" depth="8"
+      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
 
-    <!-- Behind player (z +25 to +35) -->
-    <a-box position="-0.5 4.0  27" width="8"  height="8"  depth="4" material="color: #050505; roughness: 1"></a-box>
-    <a-box position=" 1.2 7.0  30" width="5"  height="14" depth="5" material="color: #030303; roughness: 1"></a-box>
-    <a-box position="-1.8 3.0  25" width="6"  height="6"  depth="3" material="color: #040404; roughness: 1"></a-box>
-    <a-box position=" 2.8 5.5  32" width="4"  height="11" depth="6" material="color: #050505; roughness: 1"></a-box>
-    <a-box position="-3.0 2.5  28" width="3"  height="5"  depth="4" material="color: #030303; roughness: 1"></a-box>
+    <!-- === CROSS-STREET — far wall closing the right arm (z=-8 to z=-18, x=+18) === -->
+    <!-- Long terrace closing the back of the cross-street -->
+    <a-box position="18 4.5 -13" width="3" height="9"  depth="18"
+      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
+    <!-- Taller end block -->
+    <a-box position="18 7 -20"   width="3" height="14" depth="6"
+      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
+
+    <!-- === CROSS-STREET — left wall (below player POV z=-12, continuing -Z side, x=2..5) === -->
+    <a-box position="3.5 4 -18" width="5" height="8"  depth="14"
+      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
+    <a-box position="3.5 6 -28" width="5" height="12" depth="10"
+      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
+
+    <!-- === JUNCTION CORNER — filler block filling the inside corner (z=-10 to -16, x=4..10) === -->
+    <a-box position="8 5 -14"   width="10" height="10" depth="8"
+      material="color: #321a0c; roughness: 1; metalness: 0"></a-box>
+
+    <!-- === DEAD ENDS — flat black planes blocking horizon === -->
+    <!-- Main alley dead end (far -Z, ~45m from spawn) -->
+    <a-plane position="0 6 -45" rotation="0 0 0"  width="20" height="14"
+      material="color: #030303; roughness: 1; side: back"></a-plane>
+    <!-- Stacked black silhouette boxes in front of main dead-end plane -->
+    <a-box position="-2 3.5 -44" width="5"  height="7"  depth="2" material="color: #040404; roughness: 1"></a-box>
+    <a-box position=" 1 6.0 -43" width="4"  height="12" depth="2" material="color: #030303; roughness: 1"></a-box>
+    <a-box position=" 4 4.0 -45" width="5"  height="8"  depth="2" material="color: #040404; roughness: 1"></a-box>
+
+    <!-- Cross-street dead end (far +X, ~22m from junction mouth) -->
+    <a-plane position="22 6 -12" rotation="0 90 0" width="20" height="14"
+      material="color: #030303; roughness: 1; side: back"></a-plane>
+    <!-- Silhouette boxes in front of cross-street dead end -->
+    <a-box position="21 3.5 -8"  width="2" height="7"  depth="5" material="color: #040404; roughness: 1"></a-box>
+    <a-box position="21 5.5 -13" width="2" height="11" depth="4" material="color: #030303; roughness: 1"></a-box>
+    <a-box position="21 4.0 -18" width="2" height="8"  depth="5" material="color: #040404; roughness: 1"></a-box>
+
+    <!-- Behind-player dead end (z=+28) -->
+    <a-plane position="0 6 28" rotation="0 180 0" width="20" height="14"
+      material="color: #030303; roughness: 1; side: back"></a-plane>
+    <a-box position="-1 3.5 27" width="6"  height="7"  depth="2" material="color: #040404; roughness: 1"></a-box>
+    <a-box position=" 2 6.0 26" width="4"  height="12" depth="2" material="color: #030303; roughness: 1"></a-box>
 
     <!-- =========================================================
          VOLUMETRIC SEARCHLIGHTS
