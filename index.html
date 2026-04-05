@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Royal Oak — WWII London, 1940</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- aframe-extras: thumbstick locomotion for Quest controllers -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
   <script>
     AFRAME.registerComponent('blitz-flicker', {
       schema: {
@@ -30,9 +32,10 @@
       init: function () { this.t = 0; },
       tick: function (time, dt) {
         this.t += this.data.speed * (dt / 1000);
+        // FIXED: positive X rotation tilts beam away from camera (into the sky)
         const v = this.data.vertAngle + Math.sin(this.t * 0.6) * 4;
         const p = Math.sin(this.t) * this.data.swing;
-        this.el.setAttribute('rotation', `-${v.toFixed(2)} ${p.toFixed(2)} 0`);
+        this.el.setAttribute('rotation', `${v.toFixed(2)} ${p.toFixed(2)} 0`);
       }
     });
   </script>
@@ -72,12 +75,12 @@
   <!-- ═══════════════════════ LIGHTING ═══════════════════════ -->
   <!--
     Blackout aesthetic: cool blue-grey moonlight only.
-    No fill lights flooding the fog — only the streetlamp creates a warm local pool.
-    Decay=2 on point lights ensures rapid falloff; fog stays dark beyond 8m.
+    Boosted slightly so upper building is legible.
+    Short decay on all point lights to keep fog dark.
   -->
-  <a-light type="ambient"     color="#1e2e30" intensity="0.42"></a-light>
-  <a-light type="directional" color="#2a3c4c" intensity="0.35"
-           position="-4 10 3" cast-shadow="true">
+  <a-light type="ambient"     color="#1e2e30" intensity="0.55"></a-light>
+  <a-light type="directional" color="#2a3c4c" intensity="0.55"
+           position="-4 12 6" cast-shadow="true">
   </a-light>
   <!-- Faint amber bleed through blackout curtains (tight radius, no fog bloom) -->
   <a-light type="point" color="#7a4500" intensity="0.9" distance="5" decay="2"
@@ -85,11 +88,12 @@
   </a-light>
 
   <!-- ═══════════════════════ STREET ═══════════════════════ -->
-  <a-plane position="0 0 -11"  rotation="-90 0 0" width="8"  height="26"
+  <!-- Y=0.01 to prevent Z-fighting with A-Frame default ground -->
+  <a-plane position="0 0.01 -11"  rotation="-90 0 0" width="8"  height="26"
     material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
               repeat: 5 16; roughness: 0.85; metalness: 0">
   </a-plane>
-  <a-plane position="13 0 -13" rotation="-90 0 0" width="18" height="8"
+  <a-plane position="13 0.01 -13" rotation="-90 0 0" width="18" height="8"
     material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
               repeat: 11 5; roughness: 0.85; metalness: 0">
   </a-plane>
@@ -297,6 +301,8 @@
   </a-light>
 
   <!-- ═══════════════════════ SEARCHLIGHTS ═══════════════════════ -->
+  <!-- FIXED: positive X rotation on parent tilts beam away from camera into sky -->
+  <!-- FIXED: reduced flicker chance from 0.035 to 0.006 to stop floor pulsing -->
   <a-entity position="-3.2 0 -20"
             searchlight-sweep="vertAngle: 14; swing: 22; speed: 0.16">
     <a-cylinder radius="0.32" height="0.32" color="#252520" position="0 0.16 0"></a-cylinder>
@@ -307,7 +313,7 @@
     </a-cylinder>
     <a-light type="spot" color="#c0d4ff" intensity="5" angle="7" penumbra="0.4"
              position="0 0.5 0" rotation="180 0 0"
-             blitz-flicker="minIntensity: 2.5; maxIntensity: 7; chance: 0.035">
+             blitz-flicker="minIntensity: 2.5; maxIntensity: 7; chance: 0.006">
     </a-light>
   </a-entity>
 
@@ -321,7 +327,7 @@
     </a-cylinder>
     <a-light type="spot" color="#c0d4ff" intensity="5" angle="7" penumbra="0.4"
              position="0 0.5 0" rotation="180 0 0"
-             blitz-flicker="minIntensity: 2.5; maxIntensity: 7; chance: 0.028">
+             blitz-flicker="minIntensity: 2.5; maxIntensity: 7; chance: 0.005">
     </a-light>
   </a-entity>
 
@@ -340,9 +346,19 @@
   <a-sky color="#020305"></a-sky>
 
   <!-- ═══════════════════════ PLAYER ═══════════════════════ -->
-  <a-entity id="rig" position="0 0 2">
-    <a-entity camera look-controls wasd-controls="acceleration: 20" position="0 1.6 0">
-    </a-entity>
+  <!--
+    Start position: standing in the street looking diagonally at the pub entrance corner.
+    rotation "0 35 0" = 35° right, showing both west + south facades and the corner bevel.
+    movement-controls (aframe-extras): left thumbstick = walk, head-tracking = look direction.
+    oculus-touch-controls: renders Quest controller models in hand.
+  -->
+  <a-entity id="rig"
+            position="1.5 0 -3"
+            rotation="0 35 0"
+            movement-controls="fly: false; speed: 3; camera: #cam">
+    <a-entity id="cam" camera look-controls position="0 1.6 0"></a-entity>
+    <a-entity oculus-touch-controls="hand: left"></a-entity>
+    <a-entity oculus-touch-controls="hand: right"></a-entity>
   </a-entity>
 
 </a-scene>
