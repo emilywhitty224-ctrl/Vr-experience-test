@@ -44,9 +44,10 @@
   <a-scene fog="type: linear; color: #030303; near: 1; far: 8">
 
     <!-- =========================================================
-         ASSETS: Procedural SVG textures
-         cobble-tex : single oval cobblestone, 32x32px = 0.3m tile
-         tile-tex   : Victorian glazed tile with grout border, 20x10px = 0.2x0.1m tile
+         ASSETS
+         tile-tex    : Victorian glazed tile with grout border (SVG procedural)
+         street-*    : High-res PBR street texture maps
+         3D models   : GLTF packages (scene.gltf inside each folder)
     ========================================================= -->
     <a-assets>
       <!-- Procedural tile grout texture (Victorian glazed tiles) -->
@@ -56,6 +57,10 @@
       <img id="street-diff"  src="street_diffuse.jpg">
       <img id="street-norm"  src="street_normal.jpg">
       <img id="street-rough" src="street_roughness.jpg">
+      <!-- 3D models (GLTF packages) -->
+      <a-asset-item id="postbox-model" src="Royal Mail Post Box.glb/scene.gltf"></a-asset-item>
+      <a-asset-item id="bicycle-model" src="bicycle.glb/scene.gltf"></a-asset-item>
+      <a-asset-item id="lamp-model"    src="lamp.glb.obj/scene.gltf"></a-asset-item>
     </a-assets>
 
     <!-- SKY: pitch black -->
@@ -100,7 +105,7 @@
       width="3.5"
       height="11"
       material="src: #street-diff; normalMap: #street-norm; roughnessMap: #street-rough;
-                roughness: 0.3; normalScale: 1.5 1.5; repeat: 10 10">
+                roughness: 0.3; metalness: 0.1; normalScale: 1.5 1.5; repeat: 12 12">
     </a-plane>
 
     <!-- Pavements (kerbs) — 0.12m high, flush with buildings -->
@@ -300,17 +305,13 @@
          HISTORICAL PROPS
     ========================================================= -->
 
-    <!-- PILLAR BOX (right pavement): 1.5m tall red cylinder, gas-yellow cap -->
-    <a-cylinder
-      position="2.2 0.75 -2.5"
-      radius="0.2" height="1.5"
-      material="color: #8b0000; roughness: 0.45; metalness: 0.15">
-    </a-cylinder>
-    <a-cylinder
-      position="2.2 1.6 -2.5"
-      radius="0.21" height="0.2"
-      material="color: #fdfd96; roughness: 0.35; metalness: 0.1">
-    </a-cylinder>
+    <!-- PILLAR BOX — Royal Mail Post Box.glb (bbox height 1.535m → scale 1:1) -->
+    <a-gltf-model
+      id="postbox"
+      src="#postbox-model"
+      position="2.2 0 -2.5"
+      scale="1 1 1">
+    </a-gltf-model>
 
     <!-- MILK CHURNS x3 (left pavement, near pub entrance) -->
     <a-cylinder position="-1.50 0.4 -1.5"  radius="0.13" height="0.8"
@@ -334,10 +335,22 @@
     <a-box position="-1.91 0.27 -1.10" width="0.21" height="0.16" depth="0.48" color="#5c4a1e"></a-box>
     <a-box position="-1.92 0.44 -0.90" width="0.20" height="0.15" depth="0.44" color="#4e3e18"></a-box>
 
-    <!-- VICTORIAN STREETLAMP (unlit — blacked out for the war) -->
-    <a-cylinder position="-2.0 1.5 -5.0"  radius="0.04" height="3.0"  color="#2a2a2a"></a-cylinder>
-    <a-box      position="-1.85 3.1 -5.0" width="0.30" height="0.04" depth="0.04" color="#2a2a2a"></a-box>
-    <a-box      position="-1.70 3.02 -5.0" width="0.22" height="0.25" depth="0.22" color="#2a2a2a"></a-box>
+    <!-- VICTORIAN STREETLAMP — lamp.glb.obj (bbox ~1m, scale 3:1 → ~3m tall, unlit) -->
+    <a-gltf-model
+      id="lamp"
+      src="#lamp-model"
+      position="-2.0 0 -5.0"
+      scale="3 3 3">
+    </a-gltf-model>
+
+    <!-- BICYCLE — bicycle.glb (bbox height 0.467m, scale 2:1 → ~0.93m, leans on pub wall) -->
+    <a-gltf-model
+      id="bicycle"
+      src="#bicycle-model"
+      position="-1.6 0 -3.5"
+      rotation="0 90 0"
+      scale="2 2 2">
+    </a-gltf-model>
 
     <!-- =========================================================
          VOLUMETRIC SEARCHLIGHTS
@@ -350,17 +363,17 @@
          Speeds ≈ 3× the original 7000ms / 5500ms sweeps.
     ========================================================= -->
 
-    <!-- Searchlight 1 (left of alley) -->
+    <!-- Searchlight 1 (left of alley) — slightly faster sweeps, blitz-flicker on cone -->
     <a-entity position="-1.5 10 -8"
-      animation="property: rotation; from: 0 0 -25; to: 0 0 25; dur: 2300; dir: alternate; loop: true; easing: easeInOutSine">
+      animation="property: rotation; from: 0 0 -25; to: 0 0 25; dur: 1800; dir: alternate; loop: true; easing: easeInOutSine">
       <a-entity
-        animation="property: rotation; from: -8 0 0; to: 8 0 0; dur: 1600; dir: alternate; loop: true; easing: easeInOutSine">
+        animation="property: rotation; from: -8 0 0; to: 8 0 0; dur: 1250; dir: alternate; loop: true; easing: easeInOutSine">
         <a-entity
-          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 85; dir: alternate; loop: true; easing: linear">
+          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 70; dir: alternate; loop: true; easing: linear">
           <a-cone
             radius-bottom="0.2" radius-top="7" height="20"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double"
-            animation__flicker="property: material.opacity; from: 0.13; to: 0.22; dur: 480; dir: alternate; loop: true; easing: easeInOutSine">
+            material="color: #ffffff; transparent: true; opacity: 0.15; side: double"
+            blitz-flicker="base: 0.13; peak: 0.30">
           </a-cone>
         </a-entity>
       </a-entity>
@@ -368,15 +381,15 @@
 
     <!-- Searchlight 2 (right of alley, offset phase) -->
     <a-entity position="2 10 -7"
-      animation="property: rotation; from: 0 0 -20; to: 0 0 20; dur: 1900; dir: alternate; loop: true; easing: easeInOutSine; delay: 1200">
+      animation="property: rotation; from: 0 0 -20; to: 0 0 20; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine; delay: 1200">
       <a-entity
-        animation="property: rotation; from: -6 0 0; to: 6 0 0; dur: 1300; dir: alternate; loop: true; easing: easeInOutSine; delay: 800">
+        animation="property: rotation; from: -6 0 0; to: 6 0 0; dur: 1020; dir: alternate; loop: true; easing: easeInOutSine; delay: 800">
         <a-entity
-          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 90; dir: alternate; loop: true; easing: linear">
+          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 72; dir: alternate; loop: true; easing: linear">
           <a-cone
             radius-bottom="0.2" radius-top="6" height="18"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double"
-            animation__flicker="property: material.opacity; from: 0.10; to: 0.20; dur: 620; dir: alternate; loop: true; easing: easeInOutSine">
+            material="color: #ffffff; transparent: true; opacity: 0.15; side: double"
+            blitz-flicker="base: 0.10; peak: 0.26">
           </a-cone>
         </a-entity>
       </a-entity>
@@ -394,6 +407,7 @@
       positional="true"
       rolloff-factor="2"
       max-distance="15"
+      volume="0.8"
       position="-2.05 1 -0.3">
     </a-sound>
 
@@ -421,6 +435,50 @@
   <button id="enter-vr-btn">Enter VR</button>
 
   <script>
+    /**
+     * blitz-flicker component
+     * Simulates searchlight intensity spikes in sync with Blitz audio thuds.
+     * Generates a sharp 80ms attack + 340ms slow decay pulse every 1.5–5 seconds,
+     * randomised so the two cones never flash in lockstep.
+     */
+    AFRAME.registerComponent('blitz-flicker', {
+      schema: {
+        base: { default: 0.15 },
+        peak: { default: 0.30 }
+      },
+      init: function () {
+        this.elapsed    = 0;
+        this.pulseOn    = false;
+        this.pulseTime  = 0;
+        this.nextPulse  = 1500 + Math.random() * 3500;
+      },
+      tick: function (time, delta) {
+        this.elapsed += delta;
+        var o = this.data.base;
+
+        if (!this.pulseOn && this.elapsed >= this.nextPulse) {
+          this.pulseOn   = true;
+          this.pulseTime = 0;
+        }
+
+        if (this.pulseOn) {
+          this.pulseTime += delta;
+          if (this.pulseTime < 80) {
+            // Sharp attack
+            o = this.data.base + (this.data.peak - this.data.base) * (this.pulseTime / 80);
+          } else if (this.pulseTime < 420) {
+            // Slow decay
+            o = this.data.peak - (this.data.peak - this.data.base) * ((this.pulseTime - 80) / 340);
+          } else {
+            this.pulseOn   = false;
+            this.nextPulse = this.elapsed + 1500 + Math.random() * 3500;
+          }
+        }
+
+        this.el.setAttribute('material', 'opacity', o);
+      }
+    });
+
     document.getElementById('enter-vr-btn').addEventListener('click', function () {
       var scene = document.querySelector('a-scene');
       if (scene.is('vr-mode')) {
