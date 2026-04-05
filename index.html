@@ -2,554 +2,401 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WWII — The Royal Oak, Ezra Street</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Royal Oak — WWII London, 1940</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-</head>
-<body>
-  <style>
-    #enter-vr-btn {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      padding: 16px 40px;
-      font-size: 20px;
-      font-family: Arial, sans-serif;
-      font-weight: bold;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #fff;
-      background: #b8860b;
-      border: 3px solid #fff;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(184,134,11,0.8);
-    }
-    #enter-vr-btn:hover {
-      background: #d4a017;
-      box-shadow: 0 0 30px rgba(212,160,23,1);
-    }
-  </style>
-
-  <!--
-    SCENE: Duckett's Passage / Ezra Street — WWII Blackout Night
-    Street width: 3.5m (x: -1.75 to +1.75)
-    User spawns at (0, 0, 1) — camera at (0, 1.6, 1) — looking toward Royal Oak sign.
-    Pub (The Royal Oak) on the left with 45° beveled corner entrance.
-    Opposing alley wall (6m tall) on the right.
-    Alley extends ~30m behind and ~65m forward. Exponential fog hides both ends.
-    Movement: left thumbstick (aframe-extras). Snap turn: right thumbstick.
-  -->
-
-  <a-scene
-    fog="type: exponential; color: #050505; density: 0.08"
-    renderer="shadowMapEnabled: true; antialias: true"
-    shadow="type: pcfsoft">
-
-    <!-- =========================================================
-         ASSETS
-    ========================================================= -->
-    <a-assets>
-      <!-- Procedural Victorian glazed tile texture (fallback until PBR tiles load) -->
-      <img id="tile-tex"
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Crect width='20' height='10' fill='%23004225'/%3E%3Crect x='0' y='0' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='8.5' width='20' height='1.5' fill='%23001a0f'/%3E%3Crect x='0' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3Crect x='18.5' y='0' width='1.5' height='10' fill='%23001a0f'/%3E%3C/svg%3E">
-      <!-- PBR pub tile (glazed green base, 0–1.2m) -->
-      <img id="pub-tile-diff"  src="pub_tile_diffuse.jpg">
-      <img id="pub-tile-norm"  src="pub_tile_normal.jpg">
-      <img id="pub-tile-rough" src="pub_tile_roughness.jpg">
-      <!-- PBR sandstone (upper facade, 1.2–4m) -->
-      <img id="sand-diff"  src="sandstone_diffuse.jpg">
-      <img id="sand-rough" src="Sandstone_Rough.jpg">
-      <img id="sand-ao"    src="sandstone_ao.jpg">
-      <!-- Cobblestone street PBR -->
-      <img id="street-diff"  src="street_diffuse.jpg">
-      <img id="street-norm"  src="street_normal.jpg">
-      <img id="street-rough" src="street_roughness.jpg">
-      <!-- 3D models (consolidated single-file GLBs) -->
-      <a-asset-item id="postbox-model" src="Postbox.glb"></a-asset-item>
-      <a-asset-item id="bicycle-model" src="Bike.glb"></a-asset-item>
-      <a-asset-item id="lamp-model"    src="Streetlamp.glb"></a-asset-item>
-      <!-- Audio -->
-      <audio id="vera-audio"  src="vera.mp3"  preload="auto"></audio>
-      <audio id="blitz-audio" src="blitz.mp3" preload="auto"></audio>
-    </a-assets>
-
-    <!-- SKY: blackout smog -->
-    <a-sky color="#050505"></a-sky>
-
-    <!-- =========================================================
-         LIGHTING
-    ========================================================= -->
-
-    <!-- General ambient — low level, preserves blackout atmosphere -->
-    <a-light type="ambient" color="#aab5c8" intensity="0.4"></a-light>
-
-    <!-- Soft directional — defines rooflines and far depth -->
-    <a-light type="directional" color="#334466" intensity="0.2"
-      position="0 8 -3"
-      cast-shadow="true"
-      shadow-camera-left="-15" shadow-camera-right="15"
-      shadow-camera-top="15"  shadow-camera-bottom="-15"
-      shadow-map-width="2048"  shadow-map-height="2048">
-    </a-light>
-
-    <!-- Warm orange pub-door glow — casts shadows, highlights cobblestone PBR bumps -->
-    <a-light
-      type="point"
-      color="#ffaa00"
-      intensity="3"
-      distance="10"
-      cast-shadow="true"
-      shadow-map-width="1024"
-      shadow-map-height="1024"
-      position="-2.05 0.5 -0.3"
-      animation="property: light.intensity; from: 2.0; to: 4.0; dur: 220; dir: alternate; loop: true; easing: easeInOutSine">
-    </a-light>
-
-    <!-- Inner pub silhouette fill — silhouettes blast tape from behind -->
-    <a-light type="point" color="#ff5500" intensity="0.3" distance="2.5" position="-2.1 1.7 -2.2"></a-light>
-    <a-light type="point" color="#ff5500" intensity="0.2" distance="2.0" position="-2.1 3.8 -2.2"></a-light>
-
-    <!-- =========================================================
-         WET COBBLESTONE GROUND
-         Extended: z=+30 (behind) to z=-65 (far end) — center at z=-17.5, depth=95m
-         PBR repeat scaled to maintain ~0.3m cobblestone human scale.
-    ========================================================= -->
-    <a-plane
-      position="0 0 -17.5"
-      rotation="-90 0 0"
-      width="3.5"
-      height="95"
-      shadow="receive: true"
-      material="src: #street-diff; normalMap: #street-norm; roughnessMap: #street-rough;
-                roughness: 0.3; metalness: 0.1; normalScale: 1.5 1.5; repeat: 12 114">
-    </a-plane>
-
-    <!-- Pavements (kerbs, extended 95m) -->
-    <a-box position="-2.5 0.06 -17.5" width="1.5" height="0.12" depth="95" color="#383530" shadow="receive: true"></a-box>
-    <a-box position=" 2.5 0.06 -17.5" width="1.5" height="0.12" depth="95" color="#383530" shadow="receive: true"></a-box>
-
-    <!-- =========================================================
-         THE ROYAL OAK — PUB BUILDING (LEFT SIDE)
-         Detailed section z=0 to z=-10 (existing high-fidelity geometry).
-    ========================================================= -->
-
-    <!-- SIDE WALL — tile band (bottom 1.2m) -->
-    <a-box
-      position="-2.5 0.6 -5.375"
-      width="1.5" height="1.2" depth="9.25"
-      shadow="cast: true; receive: true"
-      material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 46 12">
-    </a-box>
-    <!-- SIDE WALL — upper facade (1.2m–5.5m) -->
-    <a-box
-      position="-2.5 3.35 -5.375"
-      width="1.5" height="4.3" depth="9.25"
-      shadow="cast: true; receive: true"
-      material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 46 43">
-    </a-box>
-    <!-- SIDE WALL — roofline cap -->
-    <a-box
-      position="-2.5 5.75 -5.375"
-      width="1.55" height="0.3" depth="9.45"
-      material="color: #2e2015; roughness: 0.9">
-    </a-box>
-
-    <!-- SHORT RETURN WALL (perpendicular at alley entrance) -->
-    <a-box position="-3.25 0.6 0"  width="1.5" height="1.2" depth="0.4" material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 8 12"></a-box>
-    <a-box position="-3.25 3.35 0" width="1.5" height="4.3" depth="0.4" material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 8 43"></a-box>
-    <a-box position="-3.25 5.75 0" width="1.55" height="0.3" depth="0.6" material="color: #2e2015; roughness: 0.9"></a-box>
-
-    <!-- LEFT CONTINUATION WALL — forward extension (z=-10 to z=-65, center z=-37.5, depth=55m) -->
-    <a-box position="-2.5 0.6  -37.5" width="1.5" height="1.2" depth="55" material="color: #443020; roughness: 0.95"></a-box>
-    <a-box position="-2.5 3.35 -37.5" width="1.5" height="4.3" depth="55" material="color: #3e2e1e; roughness: 0.9"></a-box>
-    <a-box position="-2.5 5.75 -37.5" width="1.55" height="0.3" depth="55.2" material="color: #2e2015; roughness: 0.9"></a-box>
-
-    <!-- LEFT CONTINUATION WALL — behind player (z=0 to z=+30, center z=+15, depth=30m) -->
-    <a-box position="-2.5 0.6  15" width="1.5" height="1.2" depth="30" material="color: #443020; roughness: 0.95"></a-box>
-    <a-box position="-2.5 3.35 15" width="1.5" height="4.3" depth="30" material="color: #3e2e1e; roughness: 0.9"></a-box>
-    <a-box position="-2.5 5.75 15" width="1.55" height="0.3" depth="30.2" material="color: #2e2015; roughness: 0.9"></a-box>
-
-    <!-- =========================================================
-         45-DEGREE CORNER ENTRANCE
-         Bevel cuts across x=-1.75, z=0 → diagonal ≈ 1.06m.
-         Entity midpoint of diagonal, rotated 45°.
-    ========================================================= -->
-    <a-entity position="-2.125 0 -0.375" rotation="0 45 0">
-
-      <!-- Tile band on diagonal face -->
-      <a-box
-        position="0 0.6 -0.21"
-        width="1.08" height="1.2" depth="0.42"
-        shadow="cast: true; receive: true"
-        material="src: #pub-tile-diff; normalMap: #pub-tile-norm; roughnessMap: #pub-tile-rough; roughness: 0.1; metalness: 0.2; repeat: 5 12">
-      </a-box>
-      <!-- Upper facade above tile band -->
-      <a-box
-        position="0 3.35 -0.21"
-        width="1.08" height="4.3" depth="0.42"
-        material="src: #sand-diff; roughnessMap: #sand-rough; aoMap: #sand-ao; roughness: 0.9; repeat: 5 43">
-      </a-box>
-      <!-- Roofline cap -->
-      <a-box
-        position="0 5.75 -0.21"
-        width="1.12" height="0.3" depth="0.46"
-        material="color: #2e2015; roughness: 0.9">
-      </a-box>
-
-      <!-- Recessed doorway alcove (very dark, simulates depth) -->
-      <a-box
-        position="0 1.1 0.05"
-        width="0.9" height="2.22" depth="0.24"
-        material="color: #040100; roughness: 1.0">
-      </a-box>
-
-      <!-- Door -->
-      <a-entity rotation="0 45 0">
-        <a-box
-          position="0 1.0 0.14"
-          width="0.84" height="2.0" depth="0.06"
-          shadow="cast: true; receive: true"
-          material="color: #3d1f00; roughness: 0.8">
-        </a-box>
-      </a-entity>
-
-      <!-- Wooden step at base -->
-      <a-box
-        position="0 0.1 0.3"
-        width="0.96" height="0.2" depth="0.44"
-        shadow="cast: true; receive: true"
-        material="color: #2a2724; roughness: 0.85">
-      </a-box>
-
-    </a-entity>
-
-    <!-- =========================================================
-         WINDOWS — PUB SIDE WALL (4 windows, WWII blast-tape X)
-    ========================================================= -->
-
-    <!-- Ground floor, window 1 (z=-2.2) -->
-    <a-box position="-1.748 1.7 -2.2" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
-    <a-box position="-1.732 1.7 -2.2" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
-    <a-box position="-1.72 1.7 -2.2"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation=" 26.5 0 0"></a-box>
-    <a-box position="-1.72 1.7 -2.2"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
-
-    <!-- Ground floor, window 2 (z=-3.8) -->
-    <a-box position="-1.748 1.7 -3.8" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
-    <a-box position="-1.732 1.7 -3.8" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
-    <a-box position="-1.72 1.7 -3.8"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation=" 26.5 0 0"></a-box>
-    <a-box position="-1.72 1.7 -3.8"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
-
-    <!-- Upper floor, window 1 (z=-2.2) — glowing curtain gap -->
-    <a-box position="-1.748 3.8 -2.2" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
-    <a-box position="-1.732 3.8 -2.2" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
-    <a-box position="-1.72 3.8 -2.2"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation=" 26.5 0 0"></a-box>
-    <a-box position="-1.72 3.8 -2.2"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
-    <!-- Tiny glowing curtain-gap — warm light leaking through blackout -->
-    <a-box
-      position="-1.718 3.12 -2.2"
-      width="0.03" height="0.04" depth="0.52"
-      material="color: #d4a017; emissive: #d4a017; emissiveIntensity: 1.5">
-    </a-box>
-
-    <!-- Upper floor, window 2 (z=-3.8) -->
-    <a-box position="-1.748 3.8 -3.8" width="0.06" height="1.4" depth="0.75" color="#180c00"></a-box>
-    <a-box position="-1.732 3.8 -3.8" width="0.04" height="1.28" depth="0.63" material="color: #060606; roughness: 1"></a-box>
-    <a-box position="-1.72 3.8 -3.8"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation=" 26.5 0 0"></a-box>
-    <a-box position="-1.72 3.8 -3.8"  width="0.04" height="1.45" depth="0.04" material="color: #7a6a50; roughness: 0.5" rotation="-26.5 0 0"></a-box>
-
-    <!-- =========================================================
-         DUCKETT'S PASSAGE — OPPOSING BUILDING (RIGHT, extended 95m)
-    ========================================================= -->
-    <a-box
-      position="2.5 3.0 -17.5"
-      width="1.5" height="6.0" depth="95"
-      material="color: #3e2e20; roughness: 0.9; metalness: 0">
-    </a-box>
-    <!-- Roofline cap -->
-    <a-box
-      position="2.5 6.15 -17.5"
-      width="1.55" height="0.3" depth="95.2"
-      material="color: #2a1e14; roughness: 0.9">
-    </a-box>
-
-    <!-- High small windows (blackout, no blast tape — too high to reach) -->
-    <a-box position="1.745 4.8 -2.0" width="0.06" height="0.85" depth="0.6"  color="#180c00"></a-box>
-    <a-box position="1.730 4.8 -2.0" width="0.04" height="0.72" depth="0.48" material="color: #060606; roughness: 1"></a-box>
-    <a-box position="1.745 4.8 -3.8" width="0.06" height="0.85" depth="0.6"  color="#180c00"></a-box>
-    <a-box position="1.730 4.8 -3.8" width="0.04" height="0.72" depth="0.48" material="color: #060606; roughness: 1"></a-box>
-
-    <!-- =========================================================
-         HISTORICAL PROPS
-         All 3 GLB models at scale 0.01 (Sketchfab cm-unit exports).
-         Postbox ≈ 1.5m, Streetlamp ≈ 3m, Bike ≈ 1m — adjust scale if
-         your specific export differs from this cm baseline.
-    ========================================================= -->
-
-    <!-- POSTBOX — Royal Mail pillar box (~1.5m) on right pavement -->
-    <a-gltf-model
-      id="postbox"
-      src="#postbox-model"
-      position="1.2 0 -2.5"
-      scale="0.01 0.01 0.01"
-      shadow="cast: true; receive: true">
-    </a-gltf-model>
-
-    <!-- BICYCLE — leaned at 15° against pub wall -->
-    <a-gltf-model
-      id="bicycle"
-      src="#bicycle-model"
-      position="-1.5 0 -3.5"
-      rotation="0 90 -15"
-      scale="0.01 0.01 0.01"
-      shadow="cast: true; receive: true">
-    </a-gltf-model>
-
-    <!-- VICTORIAN STREETLAMP — (~3m tall) on left pavement -->
-    <a-gltf-model
-      id="lamp"
-      src="#lamp-model"
-      position="-1.5 0 -5.5"
-      scale="100 100 100"
-      shadow="cast: true; receive: true">
-    </a-gltf-model>
-
-    <!-- =========================================================
-         L-JUNCTION BACKGROUND BUILDINGS
-         Unlit sooty red-brown block masses (color: #3a1f12).
-         Layout: main alley runs along -Z; junction opens to the right (+X)
-         at around z=-12. The cross-street arm extends to x=+20.
-         Fog at density 0.08 swallows detail beyond ~15m.
-    ========================================================= -->
-
-    <!-- === MAIN ALLEY — buildings lining the right side (z=0 to z=-12) === -->
-    <!-- Block A: near corner, 6m wide, 8m tall -->
-    <a-box position="5 4 -3"  width="6"  height="8"  depth="6"
-      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
-    <!-- Block B: mid-alley right, slightly taller -->
-    <a-box position="5 5 -9"  width="6"  height="10" depth="8"
-      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
-
-    <!-- === CROSS-STREET — far wall closing the right arm (z=-8 to z=-18, x=+18) === -->
-    <!-- Long terrace closing the back of the cross-street -->
-    <a-box position="18 4.5 -13" width="3" height="9"  depth="18"
-      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
-    <!-- Taller end block -->
-    <a-box position="18 7 -20"   width="3" height="14" depth="6"
-      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
-
-    <!-- === CROSS-STREET — left wall (below player POV z=-12, continuing -Z side, x=2..5) === -->
-    <a-box position="3.5 4 -18" width="5" height="8"  depth="14"
-      material="color: #3a1f12; roughness: 1; metalness: 0"></a-box>
-    <a-box position="3.5 6 -28" width="5" height="12" depth="10"
-      material="color: #2e1a0e; roughness: 1; metalness: 0"></a-box>
-
-    <!-- === JUNCTION CORNER — filler block filling the inside corner (z=-10 to -16, x=4..10) === -->
-    <a-box position="8 5 -14"   width="10" height="10" depth="8"
-      material="color: #321a0c; roughness: 1; metalness: 0"></a-box>
-
-    <!-- === DEAD ENDS — flat black planes blocking horizon === -->
-    <!-- Main alley dead end (far -Z, ~45m from spawn) -->
-    <a-plane position="0 6 -45" rotation="0 0 0"  width="20" height="14"
-      material="color: #030303; roughness: 1; side: back"></a-plane>
-    <!-- Stacked black silhouette boxes in front of main dead-end plane -->
-    <a-box position="-2 3.5 -44" width="5"  height="7"  depth="2" material="color: #040404; roughness: 1"></a-box>
-    <a-box position=" 1 6.0 -43" width="4"  height="12" depth="2" material="color: #030303; roughness: 1"></a-box>
-    <a-box position=" 4 4.0 -45" width="5"  height="8"  depth="2" material="color: #040404; roughness: 1"></a-box>
-
-    <!-- Cross-street dead end (far +X, ~22m from junction mouth) -->
-    <a-plane position="22 6 -12" rotation="0 90 0" width="20" height="14"
-      material="color: #030303; roughness: 1; side: back"></a-plane>
-    <!-- Silhouette boxes in front of cross-street dead end -->
-    <a-box position="21 3.5 -8"  width="2" height="7"  depth="5" material="color: #040404; roughness: 1"></a-box>
-    <a-box position="21 5.5 -13" width="2" height="11" depth="4" material="color: #030303; roughness: 1"></a-box>
-    <a-box position="21 4.0 -18" width="2" height="8"  depth="5" material="color: #040404; roughness: 1"></a-box>
-
-    <!-- Behind-player dead end (z=+28) -->
-    <a-plane position="0 6 28" rotation="0 180 0" width="20" height="14"
-      material="color: #030303; roughness: 1; side: back"></a-plane>
-    <a-box position="-1 3.5 27" width="6"  height="7"  depth="2" material="color: #040404; roughness: 1"></a-box>
-    <a-box position=" 2 6.0 26" width="4"  height="12" depth="2" material="color: #030303; roughness: 1"></a-box>
-
-    <!-- =========================================================
-         VOLUMETRIC SEARCHLIGHTS
-         Long tapering cones (radius-bottom small, radius-top wide).
-         Additive blending makes them glow in the dark sky.
-         Figure-8 path from incommensurable sweep durations.
-         blitz-flicker syncs intensity spikes to Blitz audio thuds.
-    ========================================================= -->
-
-    <!-- Searchlight 1 (left of alley) -->
-    <a-entity position="-1.5 10 -8"
-      animation="property: rotation; from: 0 0 -25; to: 0 0 25; dur: 1800; dir: alternate; loop: true; easing: easeInOutSine">
-      <a-entity
-        animation="property: rotation; from: -8 0 0; to: 8 0 0; dur: 1250; dir: alternate; loop: true; easing: easeInOutSine">
-        <a-entity
-          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 70; dir: alternate; loop: true; easing: linear">
-          <a-cone
-            radius-bottom="0.2" radius-top="8" height="25"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double; blending: additive"
-            blitz-flicker="base: 0.15; peak: 0.35">
-          </a-cone>
-        </a-entity>
-      </a-entity>
-    </a-entity>
-
-    <!-- Searchlight 2 (right of alley, offset phase) -->
-    <a-entity position="2 10 -7"
-      animation="property: rotation; from: 0 0 -20; to: 0 0 20; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine; delay: 1200">
-      <a-entity
-        animation="property: rotation; from: -6 0 0; to: 6 0 0; dur: 1020; dir: alternate; loop: true; easing: easeInOutSine; delay: 800">
-        <a-entity
-          animation="property: rotation; from: -1 0 0; to: 1 0 0; dur: 72; dir: alternate; loop: true; easing: linear">
-          <a-cone
-            radius-bottom="0.2" radius-top="7" height="22"
-            material="color: #ffffff; transparent: true; opacity: 0.2; side: double; blending: additive"
-            blitz-flicker="base: 0.12; peak: 0.28">
-          </a-cone>
-        </a-entity>
-      </a-entity>
-    </a-entity>
-
-    <!-- =========================================================
-         AUDIO
-    ========================================================= -->
-
-    <!-- Vera Lynn — spatialized at pub door, low volume = muffled through heavy door -->
-    <a-sound
-      src="vera.mp3"
-      autoplay="true"
-      loop="true"
-      positional="true"
-      rolloff-factor="2"
-      max-distance="15"
-      volume="0.25"
-      position="-2.05 1 -0.3">
-    </a-sound>
-
-    <!-- Blitz ambient — global loop, underpins the whole scene -->
-    <a-sound
-      src="blitz.mp3"
-      autoplay="true"
-      loop="true"
-      positional="false"
-      volume="0.4">
-    </a-sound>
-
-    <!-- =========================================================
-         CAMERA RIG
-         movement-controls (aframe-extras): left thumbstick locomotion + WASD.
-         snap-turn-controls (custom): right thumbstick 45° snap rotation.
-         Camera height: 1.6m (eye level).
-    ========================================================= -->
-    <a-entity id="rig" position="0 0 1"
-      movement-controls="speed: 0.08; fly: false; camera: #cam">
-      <a-camera id="cam" position="0 1.6 0"
-        look-controls="pointerLockEnabled: true"
-        wasd-controls="enabled: false"
-        rotation="-15 -25 0">
-      </a-camera>
-      <!-- Left controller: thumbstick locomotion -->
-      <a-entity oculus-touch-controls="hand: left"></a-entity>
-      <!-- Right controller: snap turn -->
-      <a-entity oculus-touch-controls="hand: right" snap-turn-controls></a-entity>
-    </a-entity>
-
-  </a-scene>
-
-  <button id="enter-vr-btn">Enter VR</button>
-
   <script>
-    /**
-     * blitz-flicker component
-     * Simulates searchlight intensity spikes in sync with Blitz audio thuds.
-     * Sharp 80ms attack + 340ms slow decay, randomised interval 1.5–5s per cone.
-     */
+    /* ── Randomises light intensity: simulates Blitz-era electrical faults ── */
     AFRAME.registerComponent('blitz-flicker', {
       schema: {
-        base: { default: 0.15 },
-        peak: { default: 0.35 }
+        minIntensity: { default: 0.1 },
+        maxIntensity: { default: 1.0 },
+        chance:       { default: 0.04 }
       },
-      init: function () {
-        this.elapsed   = 0;
-        this.pulseOn   = false;
-        this.pulseTime = 0;
-        this.nextPulse = 1500 + Math.random() * 3500;
-      },
-      tick: function (time, delta) {
-        this.elapsed += delta;
-        var o = this.data.base;
-
-        if (!this.pulseOn && this.elapsed >= this.nextPulse) {
-          this.pulseOn   = true;
-          this.pulseTime = 0;
+      tick: function () {
+        if (Math.random() < this.data.chance) {
+          const v = this.data.minIntensity +
+                    Math.random() * (this.data.maxIntensity - this.data.minIntensity);
+          this.el.setAttribute('light', 'intensity', v);
         }
-
-        if (this.pulseOn) {
-          this.pulseTime += delta;
-          if (this.pulseTime < 80) {
-            // Sharp attack
-            o = this.data.base + (this.data.peak - this.data.base) * (this.pulseTime / 80);
-          } else if (this.pulseTime < 420) {
-            // Slow decay
-            o = this.data.peak - (this.data.peak - this.data.base) * ((this.pulseTime - 80) / 340);
-          } else {
-            this.pulseOn   = false;
-            this.nextPulse = this.elapsed + 1500 + Math.random() * 3500;
-          }
-        }
-
-        this.el.setAttribute('material', 'opacity', o);
       }
     });
 
-    /**
-     * snap-turn-controls component
-     * Right thumbstick X-axis → 45° snap rotation of the camera rig.
-     * Dead zone prevents repeated triggers mid-flick.
-     */
-    AFRAME.registerComponent('snap-turn-controls', {
+    /* ── Sweeps parent entity (beam + light together) like an AA searchlight ──
+       vertAngle: degrees from vertical  (0 = straight up, 90 = horizontal)
+       swing:     max pan arc in degrees
+       speed:     radians per second
+    */
+    AFRAME.registerComponent('searchlight-sweep', {
       schema: {
-        angle:     { default: 45 },
-        threshold: { default: 0.65 }
+        vertAngle: { default: 15 },
+        swing:     { default: 20 },
+        speed:     { default: 0.18 }
       },
-      init: function () {
-        this.snapped    = false;
-        this.onAxisMove = this.onAxisMove.bind(this);
-        this.el.addEventListener('axismove', this.onAxisMove);
-      },
-      onAxisMove: function (e) {
-        var axes = e.detail.axis;
-        // Oculus Touch right: axis[2] = thumbstick X; fall back to axis[0]
-        var x = (axes[2] !== undefined) ? axes[2] : axes[0];
-        var rig = document.getElementById('rig');
-        if (!rig) return;
-
-        if (Math.abs(x) > this.data.threshold && !this.snapped) {
-          this.snapped = true;
-          var rot = rig.getAttribute('rotation');
-          rig.setAttribute('rotation', {
-            x: rot.x,
-            y: rot.y + (x > 0 ? -this.data.angle : this.data.angle),
-            z: rot.z
-          });
-        } else if (Math.abs(x) < 0.2) {
-          this.snapped = false;
-        }
-      }
-    });
-
-    // Enter / exit VR button
-    document.getElementById('enter-vr-btn').addEventListener('click', function () {
-      var scene = document.querySelector('a-scene');
-      if (scene.is('vr-mode')) {
-        scene.exitVR();
-      } else {
-        scene.enterVR();
+      init: function () { this.t = 0; },
+      tick: function (time, dt) {
+        this.t += this.data.speed * (dt / 1000);
+        const v = this.data.vertAngle + Math.sin(this.t * 0.6) * 4;
+        const p = Math.sin(this.t) * this.data.swing;
+        this.el.setAttribute('rotation', `-${v.toFixed(2)} ${p.toFixed(2)} 0`);
       }
     });
   </script>
+</head>
+<body>
+<a-scene
+  fog="type: linear; color: #0d120d; near: 6; far: 32"
+  renderer="colorManagement: true; physicallyCorrectLights: true"
+  shadow="type: pcfsoft"
+  background="color: #020305">
+
+  <!-- ═══════════════════════ ASSETS ═══════════════════════ -->
+  <a-assets timeout="15000">
+    <!-- Pub tile PBR set -->
+    <img id="pub-diff"    src="textures/The royal oak/pub_tile_diffuse.jpg">
+    <img id="pub-norm"    src="textures/The royal oak/pub_tile_normal.jpg">
+    <img id="pub-rough"   src="textures/The royal oak/pub_tile_roughness.jpg">
+    <!-- Sandstone PBR set -->
+    <img id="stone-diff"  src="textures/The royal oak/sandstone_diffuse.jpg">
+    <img id="stone-ao"    src="textures/The royal oak/sandstone_ao.jpg">
+    <img id="stone-rough" src="textures/The royal oak/Sandstone_Rough.jpg">
+    <!-- Street PBR set -->
+    <img id="road-diff"   src="textures/The royal oak/street_diffuse.jpg">
+    <img id="road-norm"   src="textures/The royal oak/street_normal.jpg">
+    <img id="road-rough"  src="textures/The royal oak/street_roughness.jpg">
+    <!-- GLB models -->
+    <a-asset-item id="lamp-glb"    src="textures/The royal oak/Streetlamp.glb"></a-asset-item>
+    <a-asset-item id="bike-glb"    src="textures/The royal oak/Bike.glb"></a-asset-item>
+    <a-asset-item id="postbox-glb" src="textures/The royal oak/Postbox.glb"></a-asset-item>
+    <!-- Audio -->
+    <audio id="blitz-snd" src="textures/The royal oak/blitz.mp3" preload="auto"></audio>
+    <audio id="vera-snd"  src="textures/The royal oak/vera.mp3"  preload="auto"></audio>
+  </a-assets>
+
+  <!-- ═══════════════════════ AUDIO ═══════════════════════ -->
+  <!-- Blitz ambient loop — non-positional, full surround -->
+  <a-entity sound="src: #blitz-snd; autoplay: true; loop: true; volume: 0.7; positional: false">
+  </a-entity>
+  <!-- Vera Lynn drifting from inside the pub -->
+  <a-entity position="5 1.5 -14"
+    sound="src: #vera-snd; autoplay: true; loop: true; volume: 0.5;
+           rolloffFactor: 2.5; maxDistance: 18; positional: true">
+  </a-entity>
+
+  <!-- ═══════════════════════ LIGHTING ═══════════════════════ -->
+  <!-- Blackout London: near-total darkness -->
+  <a-light type="ambient"     color="#141e14" intensity="0.2"></a-light>
+  <a-light type="directional" color="#1a2a3a" intensity="0.18"
+           position="-4 10 3" cast-shadow="true">
+  </a-light>
+
+  <!-- ═══════════════════════ L-JUNCTION STREET ═══════════════════════ -->
+  <!--
+    Layout (bird's-eye, player at origin looking toward -Z):
+
+      Main street (N-S):   X[-4,  4],  Z[ 2, -24]
+      Side street (E-W):   X[ 4, 22],  Z[-9, -17]
+      Inner corner:        (4, 0, -9)   pub entrance corner
+
+    PBR repeat values are high for fine road-tile detail.
+  -->
+
+  <!-- North-south carriageway -->
+  <a-plane
+    position="0 0 -11"
+    rotation="-90 0 0"
+    width="8" height="26"
+    material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
+              repeat: 5 16; roughness: 0.85; metalness: 0">
+  </a-plane>
+
+  <!-- East-west branch carriageway -->
+  <a-plane
+    position="13 0 -13"
+    rotation="-90 0 0"
+    width="18" height="8"
+    material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
+              repeat: 11 5; roughness: 0.85; metalness: 0">
+  </a-plane>
+
+  <!-- Raised kerb strips (slightly proud of road surface) -->
+  <a-box position="4.35 0.09 -4.5"  width="0.7"  height="0.18" depth="9"   color="#3c3c37"></a-box>
+  <a-box position="12.5 0.09 -8.65" width="15"   height="0.18" depth="0.7" color="#3c3c37"></a-box>
+
+  <!-- ═══════════════════════ THE ROYAL OAK ═══════════════════════ -->
+  <!--
+    Pub occupies X[4.125, 20.25], Z[-9.125, -21.25]
+
+    West facade outer face at X=4.0,  spans Z[-10, -21]  (length 11 m)
+    South facade outer face at Z=-9.0, spans X[5, 20]    (length 15 m)
+
+    45° bevel corner connects (4,y,-10) to (5,y,-9):
+      Outer face centre: (4.5, y, -9.5)
+      Box centre (0.125 m inward along local X): (4.588, y, -9.588)
+      Box rotation: (0, 45, 0) — local Z extends along world (0.707, 0, 0.707) = bevel direction
+
+    Facade layering (all three faces):
+      0.0–1.2 m  green gloss pub tiles  (pub_tile_ PBR)
+      1.2–5.0 m  sandstone masonry      (sandstone_ PBR)
+      5.0 m      protruding fascia      (sandstone_ PBR)
+  -->
+
+  <!-- ─── West facade ──────────────────────────────────────── -->
+
+  <!-- Green gloss tile strip (0–1.2 m) -->
+  <a-box position="4.125 0.6 -15.5" width="0.25" height="1.2" depth="11"
+         material="src: #pub-diff; normalMap: #pub-norm; roughnessMap: #pub-rough;
+                   color: #2a5018; repeat: 11 1; roughness: 0.18; metalness: 0.07">
+  </a-box>
+  <!-- Sandstone masonry (1.2–5 m) -->
+  <a-box position="4.125 3.1 -15.5" width="0.25" height="3.8" depth="11"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 5.5 2; roughness: 0.88; metalness: 0">
+  </a-box>
+
+  <!-- Four leaded-glass panes (blacked out) -->
+  <a-box position="3.95 2.2 -12"  width="0.14" height="1.5" depth="1.3" color="#0b1b0b"></a-box>
+  <a-box position="3.95 2.2 -14"  width="0.14" height="1.5" depth="1.3" color="#0b1b0b"></a-box>
+  <a-box position="3.95 2.2 -17"  width="0.14" height="1.5" depth="1.3" color="#0b1b0b"></a-box>
+  <a-box position="3.95 2.2 -19"  width="0.14" height="1.5" depth="1.3" color="#0b1b0b"></a-box>
+  <!-- Stone window surrounds -->
+  <a-box position="3.90 2.2 -12"  width="0.1" height="1.8" depth="1.6" color="#5a5040"></a-box>
+  <a-box position="3.90 2.2 -14"  width="0.1" height="1.8" depth="1.6" color="#5a5040"></a-box>
+  <a-box position="3.90 2.2 -17"  width="0.1" height="1.8" depth="1.6" color="#5a5040"></a-box>
+  <a-box position="3.90 2.2 -19"  width="0.1" height="1.8" depth="1.6" color="#5a5040"></a-box>
+  <!-- Warm amber bleed past blackout curtains -->
+  <a-light type="point" color="#4a2a00" intensity="0.55" distance="4" position="4.6 2.2 -15.5">
+  </a-light>
+
+  <!-- ─── South facade ─────────────────────────────────────── -->
+
+  <!-- Green gloss tile strip -->
+  <a-box position="12.5 0.6 -9.125" width="15" height="1.2" depth="0.25"
+         material="src: #pub-diff; normalMap: #pub-norm; roughnessMap: #pub-rough;
+                   color: #2a5018; repeat: 15 1; roughness: 0.18; metalness: 0.07">
+  </a-box>
+  <!-- Stone upper -->
+  <a-box position="12.5 3.1 -9.125" width="15" height="3.8" depth="0.25"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 7.5 2; roughness: 0.88; metalness: 0">
+  </a-box>
+  <!-- Windows -->
+  <a-box position="8  2.2 -9.06" width="1.3" height="1.5" depth="0.14" color="#0b1b0b"></a-box>
+  <a-box position="11 2.2 -9.06" width="1.3" height="1.5" depth="0.14" color="#0b1b0b"></a-box>
+  <a-box position="15 2.2 -9.06" width="1.3" height="1.5" depth="0.14" color="#0b1b0b"></a-box>
+
+  <!-- ─── 45° Bevel corner ──────────────────────────────────── -->
+  <!--
+    Door opening: 0.8 m wide, centred on outer face (4.5, y, -9.5).
+    Remaining: (1.414 - 0.8) / 2 = 0.307 m each side.
+
+    Section outer-face centres  →  box centres (0.088 m inward):
+      Left  (4.109, y, -9.891)  →  (4.197, y, -9.979)
+      Right (4.891, y, -9.109)  →  (4.979, y, -9.197)
+      Door  (4.5,   y, -9.5)    →  (4.588, y, -9.588)
+  -->
+
+  <!-- Bevel left — tile -->
+  <a-box position="4.197 0.6 -9.979"  width="0.25" height="1.2" depth="0.307" rotation="0 45 0"
+         material="src: #pub-diff; normalMap: #pub-norm; roughnessMap: #pub-rough;
+                   color: #2a5018; repeat: 0.3 1; roughness: 0.18; metalness: 0.07">
+  </a-box>
+  <!-- Bevel left — stone -->
+  <a-box position="4.197 3.1 -9.979"  width="0.25" height="3.8" depth="0.307" rotation="0 45 0"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 0.2 2; roughness: 0.88; metalness: 0">
+  </a-box>
+
+  <!-- Bevel right — tile -->
+  <a-box position="4.979 0.6 -9.197"  width="0.25" height="1.2" depth="0.307" rotation="0 45 0"
+         material="src: #pub-diff; normalMap: #pub-norm; roughnessMap: #pub-rough;
+                   color: #2a5018; repeat: 0.3 1; roughness: 0.18; metalness: 0.07">
+  </a-box>
+  <!-- Bevel right — stone -->
+  <a-box position="4.979 3.1 -9.197"  width="0.25" height="3.8" depth="0.307" rotation="0 45 0"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 0.2 2; roughness: 0.88; metalness: 0">
+  </a-box>
+
+  <!-- Stone above door (lintel to roofline: 2.4–5 m = 2.6 m tall) -->
+  <a-box position="4.588 3.7 -9.588"  width="0.25" height="2.6" depth="0.82" rotation="0 45 0"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 0.55 1.3; roughness: 0.88; metalness: 0">
+  </a-box>
+
+  <!-- Stone lintel slab over door opening -->
+  <a-box position="4.588 2.45 -9.588" width="0.32" height="0.12" depth="0.88" rotation="0 45 0"
+         color="#4a4030">
+  </a-box>
+
+  <!--
+    Door recess — 0.5 m deep into the building.
+    Inward direction = local +X with rotation (0,45,0) = world (0.707, 0, -0.707).
+    0.5 m inward from outer face (4.5,y,-9.5) → door-back at (4.854,y,-9.854).
+
+    Jamb centres (at recess mid-depth = 0.25 m inward from door-edge outer face):
+      Left  edge outer (4.217,y,-9.783)  → jamb centre (4.394,y,-9.960)
+      Right edge outer (4.783,y,-9.217)  → jamb centre (4.960,y,-9.394)
+  -->
+  <!-- Left door jamb -->
+  <a-box position="4.394 1.2 -9.960"  width="0.5" height="2.4" depth="0.07" rotation="0 45 0"
+         color="#070d07">
+  </a-box>
+  <!-- Right door jamb -->
+  <a-box position="4.960 1.2 -9.394"  width="0.5" height="2.4" depth="0.07" rotation="0 45 0"
+         color="#070d07">
+  </a-box>
+  <!-- Recess ceiling -->
+  <a-box position="4.588 2.4 -9.588"  width="0.5"  height="0.08" depth="0.8"  rotation="0 45 0"
+         color="#070d07">
+  </a-box>
+  <!-- Door panel (dark painted wood) at back of recess -->
+  <a-box position="4.854 1.1 -9.854"  width="0.1"  height="2.2"  depth="0.76" rotation="0 45 0"
+         color="#1a2810">
+  </a-box>
+  <!-- Worn sandstone doorstep -->
+  <a-box position="4.5 0.06 -9.5"     width="0.6"  height="0.12" depth="0.88" rotation="0 45 0"
+         color="#3a3028">
+  </a-box>
+
+  <!-- ─── Roofline fascia — protruding stone board, three sections ── -->
+  <!-- West -->
+  <a-box position="3.975 5.225 -15.5"  width="0.5" height="0.45" depth="11.5"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 5.5 0.3; roughness: 0.85; metalness: 0">
+  </a-box>
+  <!-- South -->
+  <a-box position="12.5 5.225 -8.975"  width="15.5" height="0.45" depth="0.5"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 7.5 0.3; roughness: 0.85; metalness: 0">
+  </a-box>
+  <!-- Bevel -->
+  <a-box position="4.588 5.225 -9.588" width="0.5" height="0.45" depth="1.5" rotation="0 45 0"
+         material="src: #stone-diff; aoMap: #stone-ao; roughnessMap: #stone-rough;
+                   repeat: 1 0.3; roughness: 0.85; metalness: 0">
+  </a-box>
+
+  <!-- ─── Pub sign (green painted board on west fascia) ─────── -->
+  <a-box position="3.84 4.55 -14" width="0.07" height="0.6" depth="5.5" color="#1b3b0a"></a-box>
+  <a-text value="THE ROYAL OAK"
+          position="3.77 4.55 -14"
+          rotation="0 -90 0"
+          color="#c8a028"
+          width="5"
+          align="center">
+  </a-text>
+
+  <!-- ─── Building shell (roof, back walls, interior solid) ──── -->
+  <!-- Flat roof slab -->
+  <a-box position="12.5 5.45 -15.125"  width="16.5" height="0.22" depth="12.5" color="#141612">
+  </a-box>
+  <!-- North (far) wall -->
+  <a-box position="12.5 2.5 -21.25"    width="16"    height="5"    depth="0.25" color="#1a1a18">
+  </a-box>
+  <!-- East wall -->
+  <a-box position="20.25 2.5 -15.125"  width="0.25"  height="5"    depth="12.5" color="#1a1a18">
+  </a-box>
+  <!-- Interior solid fill — prevents see-through -->
+  <a-box position="12.5 2.5 -15.125"   width="15.75" height="4.8"  depth="11.9" color="#0d0e0c">
+  </a-box>
+
+  <!-- ═══════════════════════ STREETLAMP ═══════════════════════ -->
+  <!-- Scale 50 50 50 per spec; lamp head ~7 m up at this scale -->
+  <a-entity gltf-model="#lamp-glb" position="3.8 0 -8.5" scale="50 50 50"></a-entity>
+  <a-light type="point" color="#ffaa55" intensity="0.95" distance="14" decay="2"
+           position="3.8 7 -8.5"
+           blitz-flicker="minIntensity: 0.4; maxIntensity: 1.05; chance: 0.015">
+  </a-light>
+
+  <!-- ═══════════════════════ SEARCHLIGHTS ═══════════════════════ -->
+  <!--
+    Each searchlight is one entity rotated by searchlight-sweep.
+    Beam cone:   radius-bottom=narrow (source end), radius-top=wide (sky end).
+    Spot light:  rotation="180 0 0" flips from default -Y to local +Y (skyward).
+    Both cylinder and light rotate together with the parent entity.
+  -->
+
+  <!-- Searchlight 1 — west rear -->
+  <a-entity position="-3.2 0 -20"
+            searchlight-sweep="vertAngle: 14; swing: 22; speed: 0.16">
+    <a-cylinder radius="0.32" height="0.32" color="#252520" position="0 0.16 0"></a-cylinder>
+    <a-cylinder radius="0.34" height="0.20" color="#1c1c18" position="0 0.42 0"></a-cylinder>
+    <!-- Volumetric beam — narrow at lamp, widens toward sky -->
+    <a-cylinder
+      radius-bottom="0.07" radius-top="0.65" height="28"
+      position="0 14.5 0"
+      color="#90aeff" opacity="0.055"
+      material="transparent: true; side: double; depthWrite: false">
+    </a-cylinder>
+    <a-light type="spot" color="#c0d4ff" intensity="2.2" angle="7" penumbra="0.4"
+             position="0 0.5 0" rotation="180 0 0"
+             blitz-flicker="minIntensity: 1.0; maxIntensity: 2.8; chance: 0.035">
+    </a-light>
+  </a-entity>
+
+  <!-- Searchlight 2 — east rear -->
+  <a-entity position="11 0 -26"
+            searchlight-sweep="vertAngle: 12; swing: 28; speed: 0.22">
+    <a-cylinder radius="0.32" height="0.32" color="#252520" position="0 0.16 0"></a-cylinder>
+    <a-cylinder radius="0.34" height="0.20" color="#1c1c18" position="0 0.42 0"></a-cylinder>
+    <a-cylinder
+      radius-bottom="0.07" radius-top="0.65" height="28"
+      position="0 14.5 0"
+      color="#90aeff" opacity="0.055"
+      material="transparent: true; side: double; depthWrite: false">
+    </a-cylinder>
+    <a-light type="spot" color="#c0d4ff" intensity="2.2" angle="7" penumbra="0.4"
+             position="0 0.5 0" rotation="180 0 0"
+             blitz-flicker="minIntensity: 1.0; maxIntensity: 2.8; chance: 0.028">
+    </a-light>
+  </a-entity>
+
+  <!-- ═══════════════════════ PROPS ═══════════════════════ -->
+  <a-entity gltf-model="#postbox-glb" position="5.2 0 -10.8" rotation="0 180 0" scale="1 1 1">
+  </a-entity>
+  <a-entity gltf-model="#bike-glb"    position="4.3 0 -18.5"  rotation="0 170 0" scale="1 1 1">
+  </a-entity>
+
+  <!-- ═══════════════════════ BACKGROUND BUILDINGS ═══════════════════════ -->
+  <!-- West terrace row — opposite side of main street -->
+  <a-box position="-5.5 3.5 -10"
+         material="src: #stone-diff; color: #888070; repeat: 4 3; roughness: 0.9; metalness: 0"
+         width="1" height="7" depth="12">
+  </a-box>
+  <a-box position="-6.5 3 -6"
+         material="src: #stone-diff; color: #7a7060; repeat: 3 2.5; roughness: 0.9; metalness: 0"
+         width="1" height="6" depth="6">
+  </a-box>
+  <a-box position="-5.8 4 -18"
+         material="src: #stone-diff; color: #6e6858; repeat: 3.5 3; roughness: 0.9; metalness: 0"
+         width="1" height="8" depth="12">
+  </a-box>
+  <!-- Dark unlit windows on terrace -->
+  <a-box position="-5.05 3   -8"  width="0.12" height="1.2" depth="0.9" color="#080d08"></a-box>
+  <a-box position="-5.05 3   -12" width="0.12" height="1.2" depth="0.9" color="#080d08"></a-box>
+  <a-box position="-5.05 4.2 -16" width="0.12" height="1.2" depth="0.9" color="#080d08"></a-box>
+  <a-box position="-5.05 4.2 -20" width="0.12" height="1.2" depth="0.9" color="#080d08"></a-box>
+
+  <!-- Road-end blocker buildings -->
+  <a-box position="0 4 -26"
+         material="src: #stone-diff; color: #60584e; repeat: 4 3; roughness: 0.9; metalness: 0"
+         width="10" height="8" depth="1">
+  </a-box>
+  <a-box position="22.5 3.5 -13"
+         material="src: #stone-diff; color: #60584e; repeat: 2 3; roughness: 0.9; metalness: 0"
+         width="1" height="7" depth="9">
+  </a-box>
+
+  <!-- ═══════════════════════ SKY ═══════════════════════ -->
+  <a-sky color="#020305"></a-sky>
+
+  <!-- ═══════════════════════ PLAYER RIG ═══════════════════════ -->
+  <!-- WASD + mouse-look on desktop; headset tracking in WebXR -->
+  <a-entity id="rig" position="0 0 2">
+    <a-entity camera look-controls wasd-controls="acceleration: 20" position="0 1.6 0">
+    </a-entity>
+  </a-entity>
+
+</a-scene>
 </body>
 </html>
