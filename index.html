@@ -45,19 +45,19 @@
         const isWest = this.data.wall === 'west';
         [45, -45].forEach(function (angle) {
           const s = document.createElement('a-box');
-          s.setAttribute('color', '#e8e0cc');
+          s.setAttribute('color', '#c4a040');
           if (isWest) {
-            s.setAttribute('position', '-0.06 0 0');
+            s.setAttribute('position', '-0.04 0 0');
             s.setAttribute('rotation', angle + ' 0 0');
-            s.setAttribute('width',  '0.03');
-            s.setAttribute('height', '2.6');
-            s.setAttribute('depth',  '0.06');
+            s.setAttribute('width',  '0.01');
+            s.setAttribute('height', '2.4');
+            s.setAttribute('depth',  '0.12');
           } else {
-            s.setAttribute('position', '0 0 0.06');
+            s.setAttribute('position', '0 0 0.04');
             s.setAttribute('rotation', '0 0 ' + angle);
-            s.setAttribute('width',  '2.6');
-            s.setAttribute('height', '0.06');
-            s.setAttribute('depth',  '0.03');
+            s.setAttribute('width',  '2.4');
+            s.setAttribute('height', '0.12');
+            s.setAttribute('depth',  '0.01');
           }
           this.el.appendChild(s);
         }, this);
@@ -379,13 +379,13 @@
   <a-box position="12.5 10.1 -15.125"  width="16.5" height="0.22" depth="12.5" color="#2a2a25"></a-box>
 
   <!-- ═══════════════════════ STREETLAMP ═══════════════════════ -->
-  <a-entity gltf-model="url(textures/The royal oak/Streetlamp.glb)" position="1.8 0 -8.8" scale="0.5 0.5 0.5"></a-entity>
+  <a-entity gltf-model="url(Streetlamp.glb)" position="1.8 0 -8.8" scale="0.5 0.5 0.5"></a-entity>
   <a-light type="point" color="#ffcc66" intensity="1.2" distance="12" decay="2"
            position="1.8 5 -8.8">
   </a-light>
 
   <!-- ═══════════════════════ PROPS ═══════════════════════ -->
-  <a-entity gltf-model="url(textures/The royal oak/Postbox.glb)" position="5.5 0 -7.2" rotation="0 180 0" scale="1 1 1"></a-entity>
+  <a-entity gltf-model="url(Postbox.glb)" position="5.5 0 -7.2" rotation="0 180 0" scale="1 1 1"></a-entity>
 
   <!-- ═══════════════════════ BACKGROUND BUILDINGS ═══════════════════════ -->
   <a-box position="-5.5 4 -10"   width="9"  height="8"  depth="12"
