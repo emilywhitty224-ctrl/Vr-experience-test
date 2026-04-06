@@ -38,63 +38,67 @@
       }
     });
 
+    // blast-tape: WWII X-pattern tape, 0.02m in front of glass
     AFRAME.registerComponent('blast-tape', {
+      schema: { wall: { default: 'west' } },
       init: function () {
-        const isWest = this.el.components['war-window'] &&
-                       this.el.components['war-window'].data.wall === 'west';
-        [1, -1].forEach(function (sign) {
-          const t = document.createElement('a-box');
-          t.setAttribute('color', '#d4c06a');
+        const isWest = this.data.wall === 'west';
+        [45, -45].forEach(function (angle) {
+          const s = document.createElement('a-box');
+          s.setAttribute('color', '#e3dccb');
           if (isWest) {
-            t.setAttribute('position', '0.09 0 0');
-            t.setAttribute('rotation', (sign * 45) + ' 0 0');
-            t.setAttribute('width',  '0.02');
-            t.setAttribute('height', '2.8');
-            t.setAttribute('depth',  '0.07');
+            s.setAttribute('position', '-0.03 0 0');
+            s.setAttribute('rotation', angle + ' 0 0');
+            s.setAttribute('width',  '0.02');
+            s.setAttribute('height', '2.9');
+            s.setAttribute('depth',  '0.04');
           } else {
-            t.setAttribute('position', '0 0 -0.09');
-            t.setAttribute('rotation', '0 0 ' + (sign * 45));
-            t.setAttribute('width',  '0.07');
-            t.setAttribute('height', '2.8');
-            t.setAttribute('depth',  '0.02');
+            s.setAttribute('position', '0 0 0.03');
+            s.setAttribute('rotation', '0 0 ' + angle);
+            s.setAttribute('width',  '2.9');
+            s.setAttribute('height', '0.04');
+            s.setAttribute('depth',  '0.02');
           }
-          this.el.appendChild(t);
+          this.el.appendChild(s);
         }, this);
       }
     });
 
+    // war-window: frame protrudes outward, glass on wall face, tape in front
+    // West wall entity X = wall outer face (4.0). Frame offset -0.08 protrudes outward.
+    // South wall entity Z = wall outer face (-9.0). Frame offset +0.08 protrudes outward.
     AFRAME.registerComponent('war-window', {
       schema: { wall: { default: 'west' } },
       init: function () {
         const isWest = this.data.wall === 'west';
         const el = this.el;
-        function box(pos, w, h, d, mat) {
+        function box(pos, w, h, d, col, mat) {
           const b = document.createElement('a-box');
           b.setAttribute('position', pos);
-          b.setAttribute('width',  String(w));
-          b.setAttribute('height', String(h));
-          b.setAttribute('depth',  String(d));
-          if (mat[0] === '#') { b.setAttribute('color', mat); }
-          else                { b.setAttribute('material', mat); }
+          b.setAttribute('width',  '' + w);
+          b.setAttribute('height', '' + h);
+          b.setAttribute('depth',  '' + d);
+          if (mat) { b.setAttribute('material', mat); }
+          else     { b.setAttribute('color', col); }
           el.appendChild(b);
         }
         const glass = 'transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810';
         if (isWest) {
-          box('0.01 0 0',      0.16, 2.4, 1.7,  '#c8b882');
-          box('0.10 0 0',      0.1,  2.2, 1.5,  glass);
-          box('0.05 0.4 0',    0.12, 0.1, 1.48, '#2a1f0f');
-          box('0.05 0 -0.5',   0.12, 2.2, 0.07, '#2a1f0f');
-          box('0.05 0 0.5',    0.12, 2.2, 0.07, '#2a1f0f');
-          box('-0.03 -1.15 0', 0.22, 0.1, 1.8,  '#c8b882');
+          box('-0.08 0 0',     0.16, 2.4, 1.7,  '#c8b882', null);  // frame (protrudes outward)
+          box('0 0 0',         0.06, 2.2, 1.5,  null,      glass); // glass (on wall face)
+          box('-0.04 0.4 0',   0.12, 0.1, 1.48, '#2a1f0f', null);  // transom
+          box('-0.04 0 -0.5',  0.12, 2.2, 0.07, '#2a1f0f', null);  // mullion L
+          box('-0.04 0 0.5',   0.12, 2.2, 0.07, '#2a1f0f', null);  // mullion R
+          box('-0.1 -1.25 0',  0.22, 0.1, 1.9,  '#c8b882', null);  // sill
         } else {
-          box('0 0 0.01',      1.7,  2.4, 0.16, '#c8b882');
-          box('0 0 -0.10',     1.5,  2.2, 0.1,  glass);
-          box('0 0.4 -0.04',   1.48, 0.1, 0.12, '#2a1f0f');
-          box('-0.5 0 -0.04',  0.07, 2.2, 0.12, '#2a1f0f');
-          box('0.5 0 -0.04',   0.07, 2.2, 0.12, '#2a1f0f');
-          box('0 -1.15 0.05',  1.8,  0.1, 0.22, '#c8b882');
+          box('0 0 0.08',      1.7,  2.4, 0.16, '#c8b882', null);
+          box('0 0 0',         1.5,  2.2, 0.06, null,      glass);
+          box('0 0.4 -0.04',   1.48, 0.1, 0.12, '#2a1f0f', null);
+          box('-0.5 0 -0.04',  0.07, 2.2, 0.12, '#2a1f0f', null);
+          box('0.5 0 -0.04',   0.07, 2.2, 0.12, '#2a1f0f', null);
+          box('0 -1.25 0.1',   1.9,  0.1, 0.22, '#c8b882', null);
         }
-        el.setAttribute('blast-tape', '');
+        el.setAttribute('blast-tape', 'wall: ' + this.data.wall);
       }
     });
   </script>
@@ -191,13 +195,13 @@
        Layer 3  Brown brick  3.5 – 10.0 m   (upper two floors)
        Fascia               10.0 – 10.5 m
 
-       GROUND FLOOR WINDOWS  bottom 1.0 m, Y=2.2, h=2.4  (1.0–3.4 m)
-       FIRST FLOOR WINDOWS   Y=4.5, h=2.0  (3.5–5.5 m) — in brick section
-       SECOND FLOOR WINDOWS  Y=5.5, h=1.4  (4.8–6.2 m) — in brick section
+       ALL WINDOWS  1.7m × 2.4m  (war-window component)
+       Ground floor  Y=2.2  (1.0–3.4 m — sandstone section)
+       1st floor     Y=5.0  (3.8–6.2 m — brick section)
+       2nd floor     Y=7.8  (6.6–9.0 m — brick section)
 
-       All glass: dark semi-transparent, recessed 0.09 m inside wall face.
-       West wall outer face X=4.0   →  glass at X=4.09, frame at X=4.01
-       South wall outer face Z=-9.0 →  glass at Z=-9.09, frame at Z=-8.99
+       West wall outer face X=4.0  — frame offset -0.08 (protrudes out), glass on face
+       South wall outer face Z=-9.0 — frame offset +0.08 (protrudes out), glass on face
   ════════════════════════════════════════════════════════════════════════ -->
 
   <!-- ─── WEST FACADE ─────────────────────────────────────── -->
@@ -216,78 +220,19 @@
          material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 6.5; roughness: 0.85; metalness: 0">
   </a-box>
 
-  <!-- ── West ground-floor windows ── -->
+  <!-- ── West windows — all 3 floors ── -->
   <a-entity war-window="wall: west" position="4.0 2.2 -11.75"></a-entity>
   <a-entity war-window="wall: west" position="4.0 2.2 -14.25"></a-entity>
   <a-entity war-window="wall: west" position="4.0 2.2 -16.75"></a-entity>
   <a-entity war-window="wall: west" position="4.0 2.2 -19.25"></a-entity>
-  <a-box position="3.97 1.05 -19.25" width="0.22" height="0.1" depth="1.8"  color="#c8b882"></a-box>
-
-  <!-- ── West first-floor windows (Y=4.5m, brick section, recessed) ── -->
-  <!-- Window A2  Z=-11.75 -->
-  <a-box position="4.01 4.5 -11.75" width="0.16" height="2.0" depth="1.3"  color="#c8b882"></a-box>
-  <a-box position="4.09 4.5 -11.75" width="0.1"  height="1.8" depth="1.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.0 -11.75" width="0.12" height="0.1" depth="1.08" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -12.1"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -11.4"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 3.55 -11.75" width="0.22" height="0.1" depth="1.4" color="#c8b882"></a-box>
-
-  <!-- Window B2  Z=-14.25 -->
-  <a-box position="4.01 4.5 -14.25" width="0.16" height="2.0" depth="1.3"  color="#c8b882"></a-box>
-  <a-box position="4.09 4.5 -14.25" width="0.1"  height="1.8" depth="1.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.0 -14.25" width="0.12" height="0.1" depth="1.08" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -14.6"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -13.9"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 3.55 -14.25" width="0.22" height="0.1" depth="1.4" color="#c8b882"></a-box>
-
-  <!-- Window C2  Z=-16.75 -->
-  <a-box position="4.01 4.5 -16.75" width="0.16" height="2.0" depth="1.3"  color="#c8b882"></a-box>
-  <a-box position="4.09 4.5 -16.75" width="0.1"  height="1.8" depth="1.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.0 -16.75" width="0.12" height="0.1" depth="1.08" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -17.1"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -16.4"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 3.55 -16.75" width="0.22" height="0.1" depth="1.4" color="#c8b882"></a-box>
-
-  <!-- Window D2  Z=-19.25 -->
-  <a-box position="4.01 4.5 -19.25" width="0.16" height="2.0" depth="1.3"  color="#c8b882"></a-box>
-  <a-box position="4.09 4.5 -19.25" width="0.1"  height="1.8" depth="1.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.0 -19.25" width="0.12" height="0.1" depth="1.08" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -19.6"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 4.5 -18.9"  width="0.12" height="1.8" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 3.55 -19.25" width="0.22" height="0.1" depth="1.4" color="#c8b882"></a-box>
-
-  <!-- ── West second-floor windows (Y=5.5m, brick section, recessed) ── -->
-  <!-- Window A3  Z=-11.75 -->
-  <a-box position="4.01 5.5 -11.75" width="0.16" height="1.4" depth="1.0"  color="#c8b882"></a-box>
-  <a-box position="4.09 5.5 -11.75" width="0.1"  height="1.2" depth="0.8"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.9 -11.75" width="0.12" height="0.1" depth="0.78" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -12.05" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -11.45" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 4.83 -11.75" width="0.22" height="0.1" depth="1.1" color="#c8b882"></a-box>
-
-  <!-- Window B3  Z=-14.25 -->
-  <a-box position="4.01 5.5 -14.25" width="0.16" height="1.4" depth="1.0"  color="#c8b882"></a-box>
-  <a-box position="4.09 5.5 -14.25" width="0.1"  height="1.2" depth="0.8"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.9 -14.25" width="0.12" height="0.1" depth="0.78" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -14.55" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -13.95" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 4.83 -14.25" width="0.22" height="0.1" depth="1.1" color="#c8b882"></a-box>
-
-  <!-- Window C3  Z=-16.75 -->
-  <a-box position="4.01 5.5 -16.75" width="0.16" height="1.4" depth="1.0"  color="#c8b882"></a-box>
-  <a-box position="4.09 5.5 -16.75" width="0.1"  height="1.2" depth="0.8"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.9 -16.75" width="0.12" height="0.1" depth="0.78" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -17.05" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -16.45" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 4.83 -16.75" width="0.22" height="0.1" depth="1.1" color="#c8b882"></a-box>
-
-  <!-- Window D3  Z=-19.25 -->
-  <a-box position="4.01 5.5 -19.25" width="0.16" height="1.4" depth="1.0"  color="#c8b882"></a-box>
-  <a-box position="4.09 5.5 -19.25" width="0.1"  height="1.2" depth="0.8"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 5.9 -19.25" width="0.12" height="0.1" depth="0.78" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -19.55" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 5.5 -18.95" width="0.12" height="1.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 4.83 -19.25" width="0.22" height="0.1" depth="1.1" color="#c8b882"></a-box>
+  <a-entity war-window="wall: west" position="4.0 5.0 -11.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 5.0 -14.25"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 5.0 -16.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 5.0 -19.25"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 7.8 -11.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 7.8 -14.25"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 7.8 -16.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 7.8 -19.25"></a-entity>
 
   <!-- ─── SOUTH FACADE ────────────────────────────────────── -->
   <!-- Green tile base: 0–1 m (unchanged) -->
@@ -305,77 +250,19 @@
          material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 6.5; roughness: 0.85; metalness: 0">
   </a-box>
 
-  <!-- ── South ground-floor windows ── -->
+  <!-- ── South windows — all 3 floors ── -->
   <a-entity war-window="wall: south" position="7.5 2.2 -9.0"></a-entity>
   <a-entity war-window="wall: south" position="10.5 2.2 -9.0"></a-entity>
   <a-entity war-window="wall: south" position="13.5 2.2 -9.0"></a-entity>
   <a-entity war-window="wall: south" position="17.0 2.2 -9.0"></a-entity>
-
-  <!-- ── South first-floor windows (Y=4.5m, brick section, recessed) ── -->
-  <!-- Window E2  X=7.5 -->
-  <a-box position="7.5 4.5 -8.99"  width="1.3"  height="2.0" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="7.5 4.5 -9.09"  width="1.1"  height="1.8" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="7.5 5.0 -9.04"  width="1.08" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.15 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.85 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.5 3.55 -8.95" width="1.4"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window F2  X=10.5 -->
-  <a-box position="10.5 4.5 -8.99"  width="1.3"  height="2.0" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="10.5 4.5 -9.09"  width="1.1"  height="1.8" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="10.5 5.0 -9.04"  width="1.08" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.15 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.85 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.5 3.55 -8.95" width="1.4"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window G2  X=13.5 -->
-  <a-box position="13.5 4.5 -8.99"  width="1.3"  height="2.0" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="13.5 4.5 -9.09"  width="1.1"  height="1.8" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="13.5 5.0 -9.04"  width="1.08" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.15 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.85 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.5 3.55 -8.95" width="1.4"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window H2  X=17.0 -->
-  <a-box position="17.0 4.5 -8.99"  width="1.3"  height="2.0" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="17.0 4.5 -9.09"  width="1.1"  height="1.8" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="17.0 5.0 -9.04"  width="1.08" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="16.65 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.35 4.5 -9.04" width="0.07" height="1.8" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.0 3.55 -8.95" width="1.4"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- ── South second-floor windows (Y=5.5m, brick section, recessed) ── -->
-  <!-- Window E3  X=7.5 -->
-  <a-box position="7.5 5.5 -8.99"  width="1.0"  height="1.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="7.5 5.5 -9.09"  width="0.8"  height="1.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="7.5 5.9 -9.04"  width="0.78" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.2 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.8 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.5 4.83 -8.95" width="1.1"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window F3  X=10.5 -->
-  <a-box position="10.5 5.5 -8.99"  width="1.0"  height="1.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="10.5 5.5 -9.09"  width="0.8"  height="1.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="10.5 5.9 -9.04"  width="0.78" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.2 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.8 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.5 4.83 -8.95" width="1.1"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window G3  X=13.5 -->
-  <a-box position="13.5 5.5 -8.99"  width="1.0"  height="1.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="13.5 5.5 -9.09"  width="0.8"  height="1.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="13.5 5.9 -9.04"  width="0.78" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.2 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.8 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.5 4.83 -8.95" width="1.1"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window H3  X=17.0 -->
-  <a-box position="17.0 5.5 -8.99"  width="1.0"  height="1.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="17.0 5.5 -9.09"  width="0.8"  height="1.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="17.0 5.9 -9.04"  width="0.78" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="16.7 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.3 5.5 -9.04"  width="0.07" height="1.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.0 4.83 -8.95" width="1.1"  height="0.1" depth="0.22" color="#c8b882"></a-box>
+  <a-entity war-window="wall: south" position="7.5 5.0 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="10.5 5.0 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="13.5 5.0 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="17.0 5.0 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="7.5 7.8 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="10.5 7.8 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="13.5 7.8 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="17.0 7.8 -9.0"></a-entity>
 
   <!-- ─── 45° BEVEL CORNER ──────────────────────────────────── -->
   <!-- Green tile base: 0–1 m (unchanged) -->
