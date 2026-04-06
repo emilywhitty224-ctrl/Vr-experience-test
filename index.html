@@ -63,6 +63,7 @@
     <img id="brick-diff"  src="textures/The royal oak/brown_brick_diffuse.jpg">
     <img id="brick-norm"  src="textures/The royal oak/brown_brick_normal.jpg">
     <img id="brick-rough" src="textures/The royal oak/brown_brick_roughness.jpg">
+    <img id="brick-ao"    src="textures/The royal oak/brown_brick_ao.jpg">
     <a-asset-item id="lamp-glb"    src="textures/The royal oak/Streetlamp.glb"></a-asset-item>
     <a-asset-item id="bike-glb"    src="textures/The royal oak/Bike.glb"></a-asset-item>
     <a-asset-item id="postbox-glb" src="textures/The royal oak/Postbox.glb"></a-asset-item>
@@ -169,7 +170,7 @@
   </a-box>
   <!-- Layer 3: Red/brown brick  2.5 – 6.5 m -->
   <a-box position="4.125 4.5 -15.5" width="0.25" height="4.0" depth="11"
-         material="color: #c03428; roughness: 0.8; metalness: 0">
+         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 4; roughness: 0.85; metalness: 0">
   </a-box>
 
   <!-- ── West ground-floor windows ── -->
@@ -259,7 +260,7 @@
   </a-box>
   <!-- Layer 3: Red/brown brick  2.5 – 6.5 m -->
   <a-box position="12.5 4.5 -9.125" width="15" height="4.0" depth="0.25"
-         material="color: #c03428; roughness: 0.8; metalness: 0">
+         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 4; roughness: 0.85; metalness: 0">
   </a-box>
 
   <!-- ── South ground-floor windows ── -->
@@ -347,7 +348,7 @@
                    repeat: 0.2 0.8; roughness: 0.88; metalness: 0">
   </a-box>
   <a-box position="4.197 4.5 -9.979"  width="0.25" height="4.0" depth="0.307" rotation="0 45 0"
-         material="color: #c03428; roughness: 0.8; metalness: 0">
+         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 4; roughness: 0.85; metalness: 0">
   </a-box>
   <!-- Right bevel piece — 3 layers -->
   <a-box position="4.979 0.6 -9.197"  width="0.25" height="1.2" depth="0.307" rotation="0 45 0"
@@ -359,7 +360,7 @@
                    repeat: 0.2 0.8; roughness: 0.88; metalness: 0">
   </a-box>
   <a-box position="4.979 4.5 -9.197"  width="0.25" height="4.0" depth="0.307" rotation="0 45 0"
-         material="color: #c03428; roughness: 0.8; metalness: 0">
+         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 4; roughness: 0.85; metalness: 0">
   </a-box>
   <!-- Sandstone above door — kept as accent -->
   <a-box position="4.588 4.85 -9.588"  width="0.25" height="3.3" depth="0.82" rotation="0 45 0"
