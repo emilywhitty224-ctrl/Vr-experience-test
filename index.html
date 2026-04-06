@@ -37,6 +37,66 @@
         this.el.setAttribute('rotation', `${v.toFixed(2)} ${p.toFixed(2)} 0`);
       }
     });
+
+    AFRAME.registerComponent('blast-tape', {
+      init: function () {
+        const isWest = this.el.components['war-window'] &&
+                       this.el.components['war-window'].data.wall === 'west';
+        [1, -1].forEach(function (sign) {
+          const t = document.createElement('a-box');
+          t.setAttribute('color', '#d4c06a');
+          if (isWest) {
+            t.setAttribute('position', '0.09 0 0');
+            t.setAttribute('rotation', (sign * 45) + ' 0 0');
+            t.setAttribute('width',  '0.02');
+            t.setAttribute('height', '2.8');
+            t.setAttribute('depth',  '0.07');
+          } else {
+            t.setAttribute('position', '0 0 -0.09');
+            t.setAttribute('rotation', '0 0 ' + (sign * 45));
+            t.setAttribute('width',  '0.07');
+            t.setAttribute('height', '2.8');
+            t.setAttribute('depth',  '0.02');
+          }
+          this.el.appendChild(t);
+        }, this);
+      }
+    });
+
+    AFRAME.registerComponent('war-window', {
+      schema: { wall: { default: 'west' } },
+      init: function () {
+        const isWest = this.data.wall === 'west';
+        const el = this.el;
+        function box(pos, w, h, d, mat) {
+          const b = document.createElement('a-box');
+          b.setAttribute('position', pos);
+          b.setAttribute('width',  String(w));
+          b.setAttribute('height', String(h));
+          b.setAttribute('depth',  String(d));
+          if (mat[0] === '#') { b.setAttribute('color', mat); }
+          else                { b.setAttribute('material', mat); }
+          el.appendChild(b);
+        }
+        const glass = 'transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810';
+        if (isWest) {
+          box('0.01 0 0',      0.16, 2.4, 1.7,  '#c8b882');
+          box('0.10 0 0',      0.1,  2.2, 1.5,  glass);
+          box('0.05 0.4 0',    0.12, 0.1, 1.48, '#2a1f0f');
+          box('0.05 0 -0.5',   0.12, 2.2, 0.07, '#2a1f0f');
+          box('0.05 0 0.5',    0.12, 2.2, 0.07, '#2a1f0f');
+          box('-0.03 -1.15 0', 0.22, 0.1, 1.8,  '#c8b882');
+        } else {
+          box('0 0 0.01',      1.7,  2.4, 0.16, '#c8b882');
+          box('0 0 -0.10',     1.5,  2.2, 0.1,  glass);
+          box('0 0.4 -0.04',   1.48, 0.1, 0.12, '#2a1f0f');
+          box('-0.5 0 -0.04',  0.07, 2.2, 0.12, '#2a1f0f');
+          box('0.5 0 -0.04',   0.07, 2.2, 0.12, '#2a1f0f');
+          box('0 -1.15 0.05',  1.8,  0.1, 0.22, '#c8b882');
+        }
+        el.setAttribute('blast-tape', '');
+      }
+    });
   </script>
 </head>
 <body>
@@ -156,37 +216,11 @@
          material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 6.5; roughness: 0.85; metalness: 0">
   </a-box>
 
-  <!-- ── West ground-floor windows (bottom edge at Y=1.0, recessed) ── -->
-  <!-- Window A  Z=-11.75 -->
-  <a-box position="4.01 2.2 -11.75" width="0.16" height="2.4" depth="1.7"  color="#c8b882"></a-box>
-  <a-box position="4.10 2.2 -11.75" width="0.1"  height="2.2" depth="1.5"  material="transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 2.6  -11.75" width="0.12" height="0.1" depth="1.48" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -12.25" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -11.25" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 1.05 -11.75" width="0.22" height="0.1" depth="1.8"  color="#c8b882"></a-box>
-
-  <!-- Window B  Z=-14.25 -->
-  <a-box position="4.01 2.2 -14.25" width="0.16" height="2.4" depth="1.7"  color="#c8b882"></a-box>
-  <a-box position="4.10 2.2 -14.25" width="0.1"  height="2.2" depth="1.5"  material="transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 2.6  -14.25" width="0.12" height="0.1" depth="1.48" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -14.75" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -13.75" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 1.05 -14.25" width="0.22" height="0.1" depth="1.8"  color="#c8b882"></a-box>
-
-  <!-- Window C  Z=-16.75 -->
-  <a-box position="4.01 2.2 -16.75" width="0.16" height="2.4" depth="1.7"  color="#c8b882"></a-box>
-  <a-box position="4.10 2.2 -16.75" width="0.1"  height="2.2" depth="1.5"  material="transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 2.6  -16.75" width="0.12" height="0.1" depth="1.48" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -17.25" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -16.25" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="3.97 1.05 -16.75" width="0.22" height="0.1" depth="1.8"  color="#c8b882"></a-box>
-
-  <!-- Window D  Z=-19.25 -->
-  <a-box position="4.01 2.2 -19.25" width="0.16" height="2.4" depth="1.7"  color="#c8b882"></a-box>
-  <a-box position="4.10 2.2 -19.25" width="0.1"  height="2.2" depth="1.5"  material="transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="4.05 2.6  -19.25" width="0.12" height="0.1" depth="1.48" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -19.75" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
-  <a-box position="4.05 2.2 -18.75" width="0.12" height="2.2" depth="0.07" color="#2a1f0f"></a-box>
+  <!-- ── West ground-floor windows ── -->
+  <a-entity war-window="wall: west" position="4.0 2.2 -11.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 2.2 -14.25"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 2.2 -16.75"></a-entity>
+  <a-entity war-window="wall: west" position="4.0 2.2 -19.25"></a-entity>
   <a-box position="3.97 1.05 -19.25" width="0.22" height="0.1" depth="1.8"  color="#c8b882"></a-box>
 
   <!-- ── West first-floor windows (Y=4.5m, brick section, recessed) ── -->
@@ -271,38 +305,11 @@
          material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 6 6.5; roughness: 0.85; metalness: 0">
   </a-box>
 
-  <!-- ── South ground-floor windows (bottom edge at Y=1.0, recessed) ── -->
-  <!-- Window E  X=7.5 -->
-  <a-box position="7.5 2.2 -8.99"  width="1.7"  height="2.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="7.5 2.2 -9.09"  width="1.5"  height="2.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="7.5 2.6  -9.04"  width="1.48" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.0 2.2 -9.04"  width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="8.0 2.2 -9.04"  width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="7.5 1.05 -8.95"  width="1.8"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window F  X=10.5 -->
-  <a-box position="10.5 2.2 -8.99" width="1.7"  height="2.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="10.5 2.2 -9.09" width="1.5"  height="2.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="10.5 2.6  -9.04" width="1.48" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.0 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="11.0 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="10.5 1.05 -8.95" width="1.8"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window G  X=13.5 -->
-  <a-box position="13.5 2.2 -8.99" width="1.7"  height="2.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="13.5 2.2 -9.09" width="1.5"  height="2.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="13.5 2.6  -9.04" width="1.48" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.0 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="14.0 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="13.5 1.05 -8.95" width="1.8"  height="0.1" depth="0.22" color="#c8b882"></a-box>
-
-  <!-- Window H  X=17.0 -->
-  <a-box position="17.0 2.2 -8.99" width="1.7"  height="2.4" depth="0.16" color="#c8b882"></a-box>
-  <a-box position="17.0 2.2 -9.09" width="1.5"  height="2.2" depth="0.1"  material="transparent: true; opacity: 0.55; metalness: 0.7; roughness: 0.08; color: #0d1810"></a-box>
-  <a-box position="17.0 2.6  -9.04" width="1.48" height="0.1" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="16.5 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.5 2.2 -9.04" width="0.07" height="2.2" depth="0.12" color="#2a1f0f"></a-box>
-  <a-box position="17.0 1.05 -8.95" width="1.8"  height="0.1" depth="0.22" color="#c8b882"></a-box>
+  <!-- ── South ground-floor windows ── -->
+  <a-entity war-window="wall: south" position="7.5 2.2 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="10.5 2.2 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="13.5 2.2 -9.0"></a-entity>
+  <a-entity war-window="wall: south" position="17.0 2.2 -9.0"></a-entity>
 
   <!-- ── South first-floor windows (Y=4.5m, brick section, recessed) ── -->
   <!-- Window E2  X=7.5 -->
@@ -468,7 +475,7 @@
   <a-box position="12.5 10.1 -15.125"  width="16.5" height="0.22" depth="12.5" color="#2a2a25"></a-box>
 
   <!-- ═══════════════════════ STREETLAMP ═══════════════════════ -->
-  <a-entity gltf-model="url(textures/The royal oak/Streetlamp.glb)" position="1.8 0 -8.8" scale="1 1 1"></a-entity>
+  <a-entity gltf-model="url(textures/The royal oak/Streetlamp.glb)" position="1.8 0 -8.8" scale="0.5 0.5 0.5"></a-entity>
   <a-light type="point" color="#ffcc66" intensity="1.2" distance="12" decay="2"
            position="1.8 5 -8.8">
   </a-light>
