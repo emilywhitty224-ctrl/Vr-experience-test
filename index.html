@@ -61,8 +61,6 @@
     <img id="brick-norm"  src="textures/The royal oak/brown_brick_normal.jpg">
     <img id="brick-rough" src="textures/The royal oak/brown_brick_roughness.jpg">
     <img id="brick-ao"    src="textures/The royal oak/brown_brick_ao.jpg">
-    <a-asset-item id="lamp-glb"    src="textures/The royal oak/Streetlight.glb"></a-asset-item>
-    <a-asset-item id="postbox-glb" src="textures/The royal oak/Postbox.glb"></a-asset-item>
     <audio id="blitz-snd" src="textures/The royal oak/blitz.mp3" preload="auto"></audio>
     <audio id="vera-snd"  src="textures/The royal oak/vera.mp3"  preload="auto"></audio>
   </a-assets>
@@ -467,13 +465,13 @@
   <a-box position="12.5 7.1 -15.125"  width="16.5" height="0.22" depth="12.5" color="#2a2a25"></a-box>
 
   <!-- ═══════════════════════ STREETLAMP ═══════════════════════ -->
-  <a-entity gltf-model="#lamp-glb" position="1.8 0 -8.8" scale="50 50 50"></a-entity>
+  <a-entity gltf-model="url(textures/The royal oak/Streetlight.glb)" position="1.8 0 -8.8" scale="50 50 50"></a-entity>
   <a-light type="point" color="#ffcc66" intensity="1.2" distance="12" decay="2"
            position="1.8 5 -8.8">
   </a-light>
 
   <!-- ═══════════════════════ PROPS ═══════════════════════ -->
-  <a-entity gltf-model="#postbox-glb" position="5.5 0 -7.2" rotation="0 180 0" scale="50 50 50"></a-entity>
+  <a-entity gltf-model="url(textures/The royal oak/Postbox.glb)" position="5.5 0 -7.2" rotation="0 180 0" scale="50 50 50"></a-entity>
 
   <!-- ═══════════════════════ BACKGROUND BUILDINGS ═══════════════════════ -->
   <a-box position="-5.5 4 -10"   width="9"  height="8"  depth="12"
