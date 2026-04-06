@@ -38,35 +38,37 @@
       }
     });
 
-    // blast-tape: WWII X-pattern tape, 0.02m in front of glass
+    // blast-tape: WWII X-pattern across the glass, off-white, 0.02m proud of glass
     AFRAME.registerComponent('blast-tape', {
       schema: { wall: { default: 'west' } },
       init: function () {
         const isWest = this.data.wall === 'west';
         [45, -45].forEach(function (angle) {
           const s = document.createElement('a-box');
-          s.setAttribute('color', '#e3dccb');
+          s.setAttribute('color', '#e8e0cc');
           if (isWest) {
-            s.setAttribute('position', '-0.03 0 0');
+            s.setAttribute('position', '0.02 0 0');
             s.setAttribute('rotation', angle + ' 0 0');
-            s.setAttribute('width',  '0.02');
-            s.setAttribute('height', '2.9');
-            s.setAttribute('depth',  '0.04');
+            s.setAttribute('width',  '0.025');
+            s.setAttribute('height', '2.8');
+            s.setAttribute('depth',  '0.05');
           } else {
-            s.setAttribute('position', '0 0 0.03');
+            s.setAttribute('position', '0 0 -0.02');
             s.setAttribute('rotation', '0 0 ' + angle);
-            s.setAttribute('width',  '2.9');
-            s.setAttribute('height', '0.04');
-            s.setAttribute('depth',  '0.02');
+            s.setAttribute('width',  '2.8');
+            s.setAttribute('height', '0.05');
+            s.setAttribute('depth',  '0.025');
           }
           this.el.appendChild(s);
         }, this);
       }
     });
 
-    // war-window: frame protrudes outward, glass on wall face, tape in front
-    // West wall entity X = wall outer face (4.0). Frame offset -0.08 protrudes outward.
-    // South wall entity Z = wall outer face (-9.0). Frame offset +0.08 protrudes outward.
+    // war-window: open frame (4 border strips) + dark glass + glazing bars + blast tape
+    // Frame strips leave the centre open so dark glass is visible.
+    // Window: 1.7m wide x 2.4m tall. Frame border: 0.12m. Inner opening: 1.46 x 2.16m.
+    // West: entity X = wall outer face (4.0). Frame strips at x=-0.05 (protrude outward).
+    // South: entity Z = wall outer face (-9.0). Frame strips at z=+0.05 (protrude outward).
     AFRAME.registerComponent('war-window', {
       schema: { wall: { default: 'west' } },
       init: function () {
@@ -82,21 +84,38 @@
           else     { b.setAttribute('color', col); }
           el.appendChild(b);
         }
-        const glass = 'transparent: true; opacity: 0.6; metalness: 0.7; roughness: 0.08; color: #0d1810';
+        const fr  = '#0d1a0a';  // dark painted pub frame (near-black green)
+        const bar = '#0d1a0a';  // glazing bars — same
+        const glm = 'transparent: true; opacity: 0.75; metalness: 0.25; roughness: 0.15; color: #0a1208';
+
         if (isWest) {
-          box('-0.08 0 0',     0.16, 2.4, 1.7,  '#c8b882', null);  // frame (protrudes outward)
-          box('0 0 0',         0.06, 2.2, 1.5,  null,      glass); // glass (on wall face)
-          box('-0.04 0.4 0',   0.12, 0.1, 1.48, '#2a1f0f', null);  // transom
-          box('-0.04 0 -0.5',  0.12, 2.2, 0.07, '#2a1f0f', null);  // mullion L
-          box('-0.04 0 0.5',   0.12, 2.2, 0.07, '#2a1f0f', null);  // mullion R
-          box('-0.1 -1.25 0',  0.22, 0.1, 1.9,  '#c8b882', null);  // sill
+          // ── 4 border strips (frame surround, open centre) ──
+          box('-0.05  1.14 0',   0.1, 0.12, 1.7,  fr);   // top
+          box('-0.05 -1.14 0',   0.1, 0.12, 1.7,  fr);   // bottom
+          box('-0.05  0   -0.79',0.1, 2.4,  0.12, fr);   // left
+          box('-0.05  0    0.79',0.1, 2.4,  0.12, fr);   // right
+          // ── dark glass panel (recessed slightly behind frame face) ──
+          box('0.05 0 0',        0.05, 2.16, 1.46, null, glm);
+          // ── glazing bars: 1 vertical + 2 horizontal → 2×3 pane grid ──
+          box('0.03  0    0',    0.06, 2.16, 0.06, bar);  // centre vertical
+          box('0.03  0.5  0',    0.06, 0.06, 1.46, bar);  // upper horizontal
+          box('0.03 -0.5  0',    0.06, 0.06, 1.46, bar);  // lower horizontal
+          // ── stone sill ──
+          box('-0.1 -1.28 0',    0.22, 0.09, 2.0,  '#b8a870', null);
         } else {
-          box('0 0 0.08',      1.7,  2.4, 0.16, '#c8b882', null);
-          box('0 0 0',         1.5,  2.2, 0.06, null,      glass);
-          box('0 0.4 -0.04',   1.48, 0.1, 0.12, '#2a1f0f', null);
-          box('-0.5 0 -0.04',  0.07, 2.2, 0.12, '#2a1f0f', null);
-          box('0.5 0 -0.04',   0.07, 2.2, 0.12, '#2a1f0f', null);
-          box('0 -1.25 0.1',   1.9,  0.1, 0.22, '#c8b882', null);
+          // ── 4 border strips ──
+          box('0   1.14  0.05',  1.7,  0.12, 0.1,  fr);
+          box('0  -1.14  0.05',  1.7,  0.12, 0.1,  fr);
+          box('-0.79 0   0.05',  0.12, 2.4,  0.1,  fr);
+          box(' 0.79 0   0.05',  0.12, 2.4,  0.1,  fr);
+          // ── glass ──
+          box('0 0 -0.05',       1.46, 2.16, 0.05, null, glm);
+          // ── glazing bars ──
+          box('0   0   -0.03',   0.06, 2.16, 0.06, bar);
+          box('0   0.5 -0.03',   1.46, 0.06, 0.06, bar);
+          box('0  -0.5 -0.03',   1.46, 0.06, 0.06, bar);
+          // ── sill ──
+          box('0 -1.28  0.12',   2.0,  0.09, 0.22, '#b8a870', null);
         }
         el.setAttribute('blast-tape', 'wall: ' + this.data.wall);
       }
