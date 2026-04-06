@@ -79,26 +79,10 @@
   </a-light>
 
   <!-- ═══════════════════════ STREET ═══════════════════════ -->
-  <!-- Cobblestone repeat scaled 2.5× (20 → 8) so individual stones appear larger -->
-  <!-- North-south road -->
-  <a-plane position="0 0.01 -11"  rotation="-90 0 0" width="8"  height="26"
+  <!-- Single master ground plane — eliminates seams -->
+  <a-plane position="9 0.001 -12" rotation="-90 0 0" width="40" height="36"
     material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
-              repeat: 8 8; roughness: 0.85; metalness: 0">
-  </a-plane>
-  <!-- East-west road (deep section past junction) -->
-  <a-plane position="13 0.01 -13" rotation="-90 0 0" width="18" height="8"
-    material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
-              repeat: 8 8; roughness: 0.85; metalness: 0">
-  </a-plane>
-  <!-- East-west road approach — fills blank gap to right of junction on load -->
-  <a-plane position="13 0.01 -3.5" rotation="-90 0 0" width="18" height="11"
-    material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
-              repeat: 8 8; roughness: 0.85; metalness: 0">
-  </a-plane>
-  <!-- Junction fill -->
-  <a-plane position="4 0.012 -9" rotation="-90 0 0" width="8" height="8"
-    material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
-              repeat: 8 8; roughness: 0.85; metalness: 0">
+              repeat: 20 20; roughness: 0.85; metalness: 0">
   </a-plane>
 
   <!-- ── PAVEMENT ── -->
