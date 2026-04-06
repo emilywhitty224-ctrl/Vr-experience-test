@@ -38,6 +38,91 @@
       }
     });
 
+    // terrace-house: WWII London terrace, front door faces local +Z
+    // Rotate entity to orient: 0 90 0=east, 0 -90 0=west, 0 0 0=south, 0 180 0=north
+    AFRAME.registerComponent('terrace-house', {
+      schema: {
+        width:    { default: 5 },
+        height:   { default: 7 },
+        depth:    { default: 6 },
+        chimneys: { default: 1 },
+        doorOff:  { default: 0 }
+      },
+      init: function () {
+        const el = this.el;
+        const W = this.data.width, H = this.data.height;
+        const D = this.data.depth, NC = this.data.chimneys, DX = this.data.doorOff;
+        const bm = 'src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; roughness: 0.85; metalness: 0';
+
+        function spawn(pos, w, h, d, attrs) {
+          const b = document.createElement('a-box');
+          b.setAttribute('position', pos);
+          b.setAttribute('width',  '' + w);
+          b.setAttribute('height', '' + h);
+          b.setAttribute('depth',  '' + d);
+          if (attrs) Object.keys(attrs).forEach(function(k) { b.setAttribute(k, attrs[k]); });
+          el.appendChild(b);
+        }
+        function bwall(pos, w, h, d) {
+          spawn(pos, w, h, d, { material: bm + '; repeat: ' + +(w/1.2).toFixed(1) + ' ' + +(h/0.8).toFixed(1) });
+        }
+
+        // Walls
+        bwall(`0 ${H/2} ${D/2}`,       W,    H,    0.25);
+        bwall(`0 ${H/2} ${-D/2}`,      W,    H,    0.25);
+        bwall(`${-W/2} ${H/2} 0`,      0.25, H,    D - 0.5);
+        bwall(`${W/2}  ${H/2} 0`,      0.25, H,    D - 0.5);
+
+        // Door surround, door leaf, horizontal rail
+        const dH = 2.1;
+        spawn(`${DX} ${dH/2+0.08} ${D/2+0.02}`, 1.2, dH+0.16, 0.12, { color: '#2a1e10' });
+        spawn(`${DX} ${dH/2}      ${D/2+0.07}`, 1.0, dH,       0.08, { color: '#1e140a' });
+        spawn(`${DX} ${dH*0.55}   ${D/2+0.09}`, 0.9, 0.05,     0.05, { color: '#140c06' });
+        // Step
+        spawn(`${DX} 0.075 ${D/2+0.4}`, 1.4, 0.15, 0.55, { color: '#707070' });
+
+        // Windows: 2 per floor x 2 floors
+        const winW = 0.9, winH = 1.1;
+        const wo  = Math.min(W * 0.27, W/2 - winW/2 - 0.25);
+        const glm = 'transparent: true; opacity: 0.88; color: #080a08; roughness: 0.3; metalness: 0.15';
+        [H * 0.24, H * 0.64].forEach(function(wY) {
+          [-wo, wo].forEach(function(wX) {
+            if (Math.abs(wX - DX) < 0.7) return; // skip if overlaps door
+            spawn(`${wX} ${wY} ${D/2+0.02}`, winW+0.14, winH+0.14, 0.10, { color: '#2a1e10' });
+            spawn(`${wX} ${wY} ${D/2+0.07}`, winW, winH, 0.05, { material: glm });
+            spawn(`${wX} ${wY} ${D/2+0.09}`, 0.05, winH, 0.03, { color: '#1a1008' });
+            spawn(`${wX} ${wY} ${D/2+0.09}`, winW, 0.05, 0.03, { color: '#1a1008' });
+          });
+        });
+
+        // Pitched roof: two angled panels meeting at ridge
+        const pitch  = 32 * Math.PI / 180;
+        const panelW = (W/2) / Math.cos(pitch);
+        const ridgeH = (W/2) * Math.tan(pitch);
+        const pCX = W/4, pCY = H + ridgeH/2, roofD = D + 0.6;
+        [[-pCX, 32], [pCX, -32]].forEach(function(pr) {
+          const r = document.createElement('a-box');
+          r.setAttribute('position', `${pr[0]} ${pCY} 0`);
+          r.setAttribute('width',    '' + panelW);
+          r.setAttribute('height',   '0.22');
+          r.setAttribute('depth',    '' + roofD);
+          r.setAttribute('rotation', `0 0 ${pr[1]}`);
+          r.setAttribute('color',    '#1a1008');
+          el.appendChild(r);
+        });
+
+        // Chimneys
+        const ridgeY = H + ridgeH;
+        const cW = 0.42, cDp = 0.42, cHt = 1.4;
+        for (let c = 0; c < NC; c++) {
+          const cX = NC === 1 ? W * 0.2 : (c === 0 ? -W * 0.15 : W * 0.15);
+          const cZ = -D * 0.25;
+          bwall(`${cX} ${ridgeY + cHt/2} ${cZ}`, cW, cHt, cDp);
+          spawn(`${cX} ${ridgeY+cHt+0.18} ${cZ}`, cW*0.55, 0.3, cDp*0.55, { color: '#1a100a' });
+        }
+      }
+    });
+
     // blast-tape: WWII X-pattern, sits on glass face
     AFRAME.registerComponent('blast-tape', {
       schema: { wall: { default: 'west' } },
@@ -161,9 +246,9 @@
 
   <!-- ═══════════════════════ STREET ═══════════════════════ -->
   <!-- Single master ground plane — eliminates seams -->
-  <a-plane position="9 0.001 -12" rotation="-90 0 0" width="40" height="36"
+  <a-plane position="13 0.001 -14" rotation="-90 0 0" width="60" height="60"
     material="src: #road-diff; normalMap: #road-norm; roughnessMap: #road-rough;
-              repeat: 20 20; roughness: 0.85; metalness: 0">
+              repeat: 30 30; roughness: 0.85; metalness: 0">
   </a-plane>
 
   <!-- ── PAVEMENT ── -->
@@ -387,25 +472,41 @@
   <!-- ═══════════════════════ PROPS ═══════════════════════ -->
   <a-entity gltf-model="url(Postbox.glb)" position="5.5 0 -7.2" rotation="0 180 0" scale="1 1 1"></a-entity>
 
-  <!-- ═══════════════════════ BACKGROUND BUILDINGS ═══════════════════════ -->
-  <a-box position="-5.5 4 -10"   width="9"  height="8"  depth="12"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 8 5; roughness: 0.85; metalness: 0">
-  </a-box>
-  <a-box position="-5.5 3.5 -4"  width="9"  height="7"  depth="8"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 7 5; roughness: 0.85; metalness: 0">
-  </a-box>
-  <a-box position="-5.5 4.5 -20" width="9"  height="9"  depth="14"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 9 6; roughness: 0.85; metalness: 0">
-  </a-box>
-  <a-box position="2 3.5 -27"    width="12" height="7"  depth="2"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 10 5; roughness: 0.85; metalness: 0">
-  </a-box>
-  <a-box position="22.5 3.5 -13" width="2"  height="7"  depth="12"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 8 5; roughness: 0.85; metalness: 0">
-  </a-box>
-  <a-box position="22.5 4 -20"   width="2"  height="8"  depth="8"
-         material="src: #brick-diff; normalMap: #brick-norm; roughnessMap: #brick-rough; aoMap: #brick-ao; repeat: 7 5; roughness: 0.85; metalness: 0">
-  </a-box>
+  <!-- ═══════════════════════ SURROUNDING TERRACE HOUSES ═══════════════════════ -->
+  <!-- Entity rotation: 0 90 0=east-facing, 0 -90 0=west, 0 0 0=south, 0 180 0=north     -->
+  <!-- All X centres for west row: -4  (front face X=-1, depth 6m west)                    -->
+  <!-- All X centres for east row: 28.25 (front face X=25.25, depth 6m east)               -->
+
+  <!-- ─── WEST ROW — 5 houses, faces east toward pub ──────────────── -->
+  <a-entity terrace-house="width: 4.5; height: 7.0; depth: 6; chimneys: 1; doorOff:  0.5" position="-4 0 -7.25"  rotation="0 90 0"></a-entity>
+  <a-entity terrace-house="width: 5.0; height: 7.5; depth: 6; chimneys: 2; doorOff: -0.8" position="-4 0 -12.0"  rotation="0 90 0"></a-entity>
+  <a-entity terrace-house="width: 4.0; height: 6.5; depth: 6; chimneys: 1; doorOff:  0.2" position="-4 0 -16.5"  rotation="0 90 0"></a-entity>
+  <a-entity terrace-house="width: 5.5; height: 7.0; depth: 6; chimneys: 1; doorOff: -1.0" position="-4 0 -21.25" rotation="0 90 0"></a-entity>
+  <a-entity terrace-house="width: 4.5; height: 8.0; depth: 6; chimneys: 2; doorOff:  0.6" position="-4 0 -26.25" rotation="0 90 0"></a-entity>
+
+  <!-- ─── EAST ROW — 5 houses, faces west toward pub ──────────────── -->
+  <a-entity terrace-house="width: 4.5; height: 7.5; depth: 6; chimneys: 2; doorOff: -0.5" position="28.25 0 -7.25"  rotation="0 -90 0"></a-entity>
+  <a-entity terrace-house="width: 5.0; height: 6.5; depth: 6; chimneys: 1; doorOff:  0.8" position="28.25 0 -12.0"  rotation="0 -90 0"></a-entity>
+  <a-entity terrace-house="width: 4.0; height: 7.0; depth: 6; chimneys: 2; doorOff: -0.3" position="28.25 0 -16.5"  rotation="0 -90 0"></a-entity>
+  <a-entity terrace-house="width: 5.5; height: 8.0; depth: 6; chimneys: 1; doorOff:  1.0" position="28.25 0 -21.25" rotation="0 -90 0"></a-entity>
+  <a-entity terrace-house="width: 4.5; height: 7.0; depth: 6; chimneys: 2; doorOff: -0.6" position="28.25 0 -26.25" rotation="0 -90 0"></a-entity>
+
+  <!-- ─── NORTH ROW — 6 houses, faces south toward pub ─────────────── -->
+  <a-entity terrace-house="width: 5.5; height: 7.5; depth: 6; chimneys: 2; doorOff:  0.8" position="-1.25 0 -29.25" rotation="0 0 0"></a-entity>
+  <a-entity terrace-house="width: 6.0; height: 7.0; depth: 6; chimneys: 1; doorOff: -0.5" position="  4.5 0 -29.25" rotation="0 0 0"></a-entity>
+  <a-entity terrace-house="width: 5.0; height: 8.0; depth: 6; chimneys: 2; doorOff:  0.3" position=" 10.0 0 -29.25" rotation="0 0 0"></a-entity>
+  <a-entity terrace-house="width: 6.5; height: 7.0; depth: 6; chimneys: 1; doorOff: -1.2" position=" 15.75 0 -29.25" rotation="0 0 0"></a-entity>
+  <a-entity terrace-house="width: 6.0; height: 7.5; depth: 6; chimneys: 2; doorOff:  0.6" position=" 22.0 0 -29.25" rotation="0 0 0"></a-entity>
+  <a-entity terrace-house="width: 5.5; height: 6.5; depth: 6; chimneys: 1; doorOff: -0.4" position=" 27.75 0 -29.25" rotation="0 0 0"></a-entity>
+
+  <!-- ─── SOUTH ROW — 6 houses, faces north toward pub ─────────────── -->
+  <!-- Front face at Z=+3 (3m south of player start, across the road)  -->
+  <a-entity terrace-house="width: 5.5; height: 6.5; depth: 6; chimneys: 1; doorOff: -0.5" position="-1.25 0 6" rotation="0 180 0"></a-entity>
+  <a-entity terrace-house="width: 6.0; height: 7.5; depth: 6; chimneys: 2; doorOff:  0.8" position="  4.5 0 6" rotation="0 180 0"></a-entity>
+  <a-entity terrace-house="width: 5.0; height: 7.0; depth: 6; chimneys: 1; doorOff: -0.3" position=" 10.0 0 6" rotation="0 180 0"></a-entity>
+  <a-entity terrace-house="width: 6.5; height: 8.0; depth: 6; chimneys: 2; doorOff:  1.0" position=" 15.75 0 6" rotation="0 180 0"></a-entity>
+  <a-entity terrace-house="width: 6.0; height: 7.0; depth: 6; chimneys: 1; doorOff: -0.5" position=" 22.0 0 6" rotation="0 180 0"></a-entity>
+  <a-entity terrace-house="width: 5.5; height: 7.5; depth: 6; chimneys: 2; doorOff:  0.6" position=" 27.75 0 6" rotation="0 180 0"></a-entity>
 
   <!-- ═══════════════════════ SKY ═══════════════════════ -->
   <a-sky color="#b0c8d8"></a-sky>
